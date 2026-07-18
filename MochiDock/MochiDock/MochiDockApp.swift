@@ -5,28 +5,42 @@
 //  Created by Scott on 2026/7/18.
 //
 
+import AppKit
 import SwiftUI
-import SwiftData
 
 @main
 struct MochiDockApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @NSApplicationDelegateAdaptor private var appDelegate: MochiDockAppDelegate
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra("MochiDock", systemImage: "pawprint.fill") {
+            Button("Show Pet") {
+                appDelegate.showPet()
+            }
+
+            Divider()
+
+            Button("Quit MochiDock") {
+                NSApplication.shared.terminate(nil)
+            }
         }
-        .modelContainer(sharedModelContainer)
+    }
+}
+
+@MainActor
+final class MochiDockAppDelegate: NSObject, NSApplicationDelegate {
+    private let model = PetInteractionModel()
+    private lazy var panelController = PetPanelController(model: model)
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        showPet()
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
+    func showPet() {
+        panelController.showPet()
     }
 }
