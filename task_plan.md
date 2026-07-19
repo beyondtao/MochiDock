@@ -31,6 +31,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 ### 当前正在做
 
 - `MD-001` 阶段 1A 最小桌面宠物：开发与自动验证完成，正在进行人工体验验收。
+- `MD-002` 正式角色静态接入与桌面尺寸验证：开发与独立自动验证完成，正在进行人工体验验收。
+- 小熊猫角色母版 v0.3：基础造型已获用户正向确认并接入应用，正在验证桌面尺寸和透明边缘。
 
 ### 下一步可能做
 
@@ -46,6 +48,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | 编号 | 任务 | 状态 | 任务书 |
 |---|---|---|---|
 | MD-001 | 阶段 1A：最小桌面宠物 | 待验收 | [打开任务书](docs/tasks/active/MD-001-stage-1a-minimum-desktop-pet.md) |
+| MD-002 | 正式角色静态接入与桌面尺寸验证 | 待验收 | [打开任务书](docs/tasks/active/MD-002-static-character-integration.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
 
@@ -61,6 +64,10 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 
 - [已确认结论与发现](findings.md)
 - [阶段进度记录](progress.md)
+- [小熊猫角色母版 v0.2](docs/design/character/character_master_v0.2.md)
+- [角色设计计划](docs/design/character/task_plan.md)
+- [角色设计决定](docs/design/character/findings.md)
+- [角色设计进展](docs/design/character/progress.md)
 - [任务文档规则](docs/tasks/README.md)
 - [AI 开发连续性总结](sources/ai-development-mode-summary.md)
 - [MochiDock PM Skill 蓝图](skill-blueprints/mochidock-pm.md)
