@@ -19,9 +19,34 @@ final class PetPanelController {
         panel?.orderOut(nil)
     }
 
+    func selectDisplaySize(_ size: PetDisplaySize) {
+        guard model.displaySize != size else { return }
+
+        model.selectDisplaySize(size)
+        guard let panel else { return }
+
+        let center = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
+        let length = size.pointLength
+        panel.setFrame(
+            NSRect(
+                x: center.x - length / 2,
+                y: center.y - length / 2,
+                width: length,
+                height: length
+            ),
+            display: true,
+            animate: false
+        )
+    }
+
     private func makePanel() -> NSPanel {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 128, height: 128),
+            contentRect: NSRect(
+                x: 0,
+                y: 0,
+                width: model.displaySize.pointLength,
+                height: model.displaySize.pointLength
+            ),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false

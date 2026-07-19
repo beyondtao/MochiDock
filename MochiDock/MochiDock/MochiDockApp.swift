@@ -18,6 +18,18 @@ struct MochiDockApp: App {
                 appDelegate.showPet()
             }
 
+            Picker(
+                "Pet Size",
+                selection: Binding(
+                    get: { appDelegate.displaySize },
+                    set: { appDelegate.selectDisplaySize($0) }
+                )
+            ) {
+                ForEach(PetDisplaySize.allCases) { size in
+                    Text(size.menuTitle).tag(size)
+                }
+            }
+
             Divider()
 
             Button("Quit MochiDock") {
@@ -32,6 +44,8 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate {
     private let model = PetInteractionModel()
     private lazy var panelController = PetPanelController(model: model)
 
+    var displaySize: PetDisplaySize { model.displaySize }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         showPet()
     }
@@ -42,5 +56,9 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate {
 
     func showPet() {
         panelController.showPet()
+    }
+
+    func selectDisplaySize(_ size: PetDisplaySize) {
+        panelController.selectDisplaySize(size)
     }
 }

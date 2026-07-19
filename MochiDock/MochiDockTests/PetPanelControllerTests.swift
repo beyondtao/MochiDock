@@ -41,4 +41,42 @@ struct PetPanelControllerTests {
         #expect(controller.panel === firstPanel)
         #expect(controller.panel?.isVisible == true)
     }
+
+    @Test(arguments: [
+        (PetDisplaySize.small, CGFloat(80)),
+        (PetDisplaySize.medium, CGFloat(120)),
+        (PetDisplaySize.large, CGFloat(160)),
+    ])
+    func selectingSizeUpdatesPanelDimensions(size: PetDisplaySize, pointLength: CGFloat) {
+        let controller = PetPanelController(model: PetInteractionModel())
+        controller.showPet()
+
+        controller.selectDisplaySize(size)
+
+        #expect(controller.panel?.frame.size == NSSize(width: pointLength, height: pointLength))
+    }
+
+    @Test func selectingSizeKeepsPanelIdentityAndCenter() {
+        let controller = PetPanelController(model: PetInteractionModel())
+        controller.showPet()
+        let originalPanel = controller.panel
+        let originalCenter = NSPoint(x: originalPanel?.frame.midX ?? 0, y: originalPanel?.frame.midY ?? 0)
+
+        controller.selectDisplaySize(.large)
+
+        #expect(controller.panel === originalPanel)
+        #expect(controller.panel?.frame.midX == originalCenter.x)
+        #expect(controller.panel?.frame.midY == originalCenter.y)
+    }
+
+    @Test func repeatedSizeSelectionDoesNotCreateAnotherPanel() {
+        let controller = PetPanelController(model: PetInteractionModel())
+        controller.showPet()
+        let originalPanel = controller.panel
+
+        controller.selectDisplaySize(.small)
+        controller.selectDisplaySize(.small)
+
+        #expect(controller.panel === originalPanel)
+    }
 }
