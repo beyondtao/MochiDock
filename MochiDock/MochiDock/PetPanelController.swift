@@ -6,6 +6,10 @@ final class PetPanelController {
     private let model: PetInteractionModel
     private(set) var panel: NSPanel?
 
+    var isPetVisible: Bool {
+        panel?.isVisible == true
+    }
+
     init(model: PetInteractionModel) {
         self.model = model
     }
@@ -17,6 +21,14 @@ final class PetPanelController {
 
     func hidePet() {
         panel?.orderOut(nil)
+    }
+
+    func togglePetVisibility() {
+        if isPetVisible {
+            hidePet()
+        } else {
+            showPet()
+        }
     }
 
     func selectDisplaySize(_ size: PetDisplaySize) {
@@ -56,7 +68,7 @@ final class PetPanelController {
         panel.hasShadow = false
         panel.isMovableByWindowBackground = true
         panel.level = .floating
-        panel.collectionBehavior = [.moveToActiveSpace]
+        panel.collectionBehavior = [.canJoinAllSpaces]
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
         panel.contentView = NSHostingView(rootView: PetView(model: model))
