@@ -93,6 +93,14 @@
 - 默认尺寸为 120；尺寸状态、资源名和 point 边长集中在 `PetDisplaySize`，面板控制器切换同一 `NSPanel` 的 frame 并保持中心。
 - 高级项目经理独立复跑 22 个测试和干净 Debug 构建均成功，资源像素、alpha、哈希和构建产物 rendition 均与 Handoff 一致。
 - 未发现 Critical 或 Important 代码问题。测试未主动清理真实面板是非阻塞质量项；全视图点击手势与 `isMovableByWindowBackground` 的组合必须通过真实拖动验收。
+- 人工验收确认尺寸切换和 30 分钟稳定性通过。
+- `PetPanelController.hidePet()` 已存在，但没有从 `MochiDockAppDelegate` 和菜单暴露；无边框面板又没有关闭按钮，导致用户无法进入隐藏状态。当前 `Show Pet` 在宠物已显示时无视觉变化属于幂等行为，真正缺口是缺少可达的 `Hide Pet` 操作。
+- MD-003 首轮实现同时显示 `Show Pet` 与 `Hide Pet`。用户要求合并为单一动态菜单项：面板可见时提供 `Hide Pet`，面板隐藏时提供 `Show Pet`；不使用固定的 `Toggle Pet` 文案。
+- MD-003 第二次开发报告复用了旧的 `hidePet` RED 和 27 项测试，但没有修改两个独立菜单按钮，也没有新增动态标题、单一切换入口或 Handoff 修订记录；旧测试通过不能证明新交互需求已实现。
+- MD-003 最终修订使用单一动态按钮；标题直接读取 `PetPanelController.isPetVisible`（实际 `NSPanel.isVisible`），AppDelegate 的 `ObservableObject` 通知仅触发 SwiftUI 重新求值，没有保存第二份可见状态。独立复核确认固定双按钮已移除，30 个测试和干净构建通过。
+- 用户一度建议固定 `Show/Hide Pet`，进一步排查后最终保留更明确的动态标题：可见时 `Hide Pet`，隐藏时 `Show Pet`。
+- 启动后宠物看似未显示的根因是面板可能停留在其他 Space；菜单一直显示 `Show Pet` 的根因是 MenuBarExtra 内容未订阅 AppDelegate 的状态变化。最终使用 `.canJoinAllSpaces` 与 `MochiDockMenuContent @ObservedObject` 修复，仍以真实 `NSPanel.isVisible` 为唯一可见性事实来源。
+- `.canJoinAllSpaces` 扩展了阶段 1A 最初未启用的跨 Space 行为；用户在看到最终实现和验证结果后授权提交，本次将其作为 MD-003 启动可见性修正接受，后续仍可在人工体验中调整。
 
 ## Skill 设计恢复核对
 
