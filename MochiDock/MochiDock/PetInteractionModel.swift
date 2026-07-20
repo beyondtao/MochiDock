@@ -28,6 +28,8 @@ final class PetInteractionModel {
     private var isPlaybackActive = false
     private var completedBreathingCycles = 0
 
+    var preferencesStore: any PetPreferencesStoring { preferences }
+
     init() {
         self.scheduler = DispatchPetAnimationScheduler()
         self.timing = .standard

@@ -63,6 +63,36 @@ struct PetPreferencesTests {
         #expect(store.values[PetPreferenceKey.displaySize] == PetDisplaySize.medium.rawValue)
         #expect(store.writeCount == 2)
     }
+
+    @Test(arguments: [
+        NSPoint(x: 480.5, y: 220.25),
+        NSPoint(x: -1_340.75, y: -620.5),
+    ])
+    func positionRoundTripsPositiveAndNegativeCoordinates(origin: NSPoint) throws {
+        let encoded = try #require(PetWindowPosition(origin: origin).encoded())
+
+        let decoded = PetWindowPosition.decode(encoded)
+
+        #expect(decoded?.origin == origin)
+        #expect(encoded == "{\"version\":1,\"x\":\(origin.x),\"y\":\(origin.y)}")
+    }
+
+    @Test(arguments: [
+        "",
+        "not-json",
+        "{}",
+        "{\"version\":1,\"x\":12}",
+        "{\"version\":2,\"x\":12,\"y\":34}",
+        "{\"version\":1,\"x\":NaN,\"y\":34}",
+        "{\"version\":1,\"x\":1e400,\"y\":34}",
+    ])
+    func invalidPositionPayloadsAreRejected(payload: String) {
+        #expect(PetWindowPosition.decode(payload) == nil)
+    }
+
+    @Test func positionPreferenceUsesAStableCentralizedKey() {
+        #expect(PetPreferenceKey.windowPosition == "pet.windowPosition")
+    }
 }
 
 final class InMemoryPetPreferences: PetPreferencesStoring {

@@ -4,6 +4,280 @@ import Testing
 
 @MainActor
 struct PetPanelControllerTests {
+    @Test func validStoredPositionDefinesTheFirstVisiblePanelFrame() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":-900,\"y\":140}"
+        ])
+        let controller = makeController(store: store, visibleFrames: [
+            NSRect(x: -1_280, y: 0, width: 1_280, height: 800)
+        ])
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        #expect(controller.panel?.frame == NSRect(x: -900, y: 140, width: 120, height: 120))
+        #expect(store.writeCount == 0)
+    }
+
+    @Test func offscreenStoredPositionIsCorrectedAndPersistedBeforeShowing() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":1900,\"y\":900}"
+        ])
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 40, width: 1_440, height: 860)]
+        )
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        #expect(controller.panel?.frame == NSRect(x: 1_320, y: 780, width: 120, height: 120))
+        #expect(PetWindowPosition.decode(store.values[PetPreferenceKey.windowPosition]!)?.origin == NSPoint(x: 1_320, y: 780))
+        #expect(store.writeCount == 1)
+    }
+
+    @Test(arguments: ["bad", "{\"version\":2,\"x\":100,\"y\":100}"])
+    func invalidStoredPositionUsesDefaultCenteredBehavior(payload: String) {
+        let store = InMemoryPetPreferences(values: [PetPreferenceKey.windowPosition: payload])
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        )
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        #expect(controller.panel?.frame.origin != NSPoint(x: 100, y: 100))
+        #expect(store.writeCount == 0)
+    }
+
+    @Test func dragWritesOnlyTheFinalMovedPositionOnPointerRelease() throws {
+        let store = InMemoryPetPreferences()
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let panel = try #require(controller.panel as? PetPanel)
+
+        panel.pointerContactChanged(true)
+        panel.setFrameOrigin(NSPoint(x: 200, y: 220))
+        panel.setFrameOrigin(NSPoint(x: 260, y: 280))
+        #expect(store.writeCount == 0)
+
+        panel.pointerContactChanged(false)
+        #expect(store.writeCount == 1)
+        #expect(PetWindowPosition.decode(store.values[PetPreferenceKey.windowPosition]!)?.origin == NSPoint(x: 260, y: 280))
+    }
+
+    @Test func clickWithoutMovingDoesNotWriteAPosition() throws {
+        let store = InMemoryPetPreferences()
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let panel = try #require(controller.panel as? PetPanel)
+
+        panel.pointerContactChanged(true)
+        panel.pointerContactChanged(false)
+
+        #expect(store.writeCount == 0)
+    }
+
+    @Test func sizeChangeKeepsCenterWhenSafeAndPersistsTheNewOrigin() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":500,\"y\":300}"
+        ])
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let originalCenter = NSPoint(x: 560, y: 360)
+
+        controller.selectDisplaySize(.jumbo)
+
+        #expect(controller.panel?.frame == NSRect(x: 400, y: 200, width: 320, height: 320))
+        #expect(NSPoint(x: controller.panel!.frame.midX, y: controller.panel!.frame.midY) == originalCenter)
+        #expect(PetWindowPosition.decode(store.values[PetPreferenceKey.windowPosition]!)?.origin == NSPoint(x: 400, y: 200))
+    }
+
+    @Test func screenNotificationOnlyWritesWhenCorrectionMovesThePanel() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":900,\"y\":500}"
+        ])
+        var frames = [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        let notifications = NotificationCenter()
+        let controller = makeController(
+            store: store,
+            visibleFrames: { frames },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        #expect(store.writeCount == 0)
+
+        frames = [NSRect(x: 0, y: 40, width: 800, height: 560)]
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        #expect(controller.panel?.frame == NSRect(x: 680, y: 480, width: 120, height: 120))
+        #expect(store.writeCount == 1)
+    }
+
+    @Test func screenNotificationPersistsAppKitMovedSafeFrameWithoutMovingItAgain() throws {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":900,\"y\":500}"
+        ])
+        var frames = [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        let notifications = NotificationCenter()
+        let controller = makeController(
+            store: store,
+            visibleFrames: { frames },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let panel = try #require(controller.panel)
+
+        let appKitMovedFrame = NSRect(x: 300, y: 220, width: 120, height: 120)
+        panel.setFrame(appKitMovedFrame, display: false)
+        frames = [NSRect(x: 0, y: 40, width: 800, height: 560)]
+
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        #expect(panel.frame == appKitMovedFrame)
+        #expect(
+            PetWindowPosition.decode(store.values[PetPreferenceKey.windowPosition]!)?.origin
+                == appKitMovedFrame.origin
+        )
+        #expect(store.writeCount == 1)
+    }
+
+    @Test func unchangedScreenNotificationDoesNotCreateAMissingPositionValue() {
+        let store = InMemoryPetPreferences()
+        let notifications = NotificationCenter()
+        let visibleFrame = NSRect(x: 0, y: 40, width: 1_440, height: 860)
+        let stableFrame = NSRect(x: 300, y: 220, width: 120, height: 120)
+        let controller = makeController(
+            store: store,
+            visibleFrames: { [visibleFrame] },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        controller.panel?.setFrame(stableFrame, display: false)
+
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        #expect(controller.panel?.frame == stableFrame)
+        #expect(store.values[PetPreferenceKey.windowPosition] == nil)
+        #expect(store.writeCount == 0)
+    }
+
+    @Test func unchangedScreenNotificationDoesNotReplaceAnInvalidPositionValue() {
+        let invalidValue = "not-a-position"
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: invalidValue
+        ])
+        let notifications = NotificationCenter()
+        let visibleFrame = NSRect(x: 0, y: 40, width: 1_440, height: 860)
+        let stableFrame = NSRect(x: 300, y: 220, width: 120, height: 120)
+        let controller = makeController(
+            store: store,
+            visibleFrames: { [visibleFrame] },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        controller.panel?.setFrame(stableFrame, display: false)
+
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        #expect(controller.panel?.frame == stableFrame)
+        #expect(store.values[PetPreferenceKey.windowPosition] == invalidValue)
+        #expect(store.writeCount == 0)
+    }
+
+    @Test func restorationWaitsForScreenInformationThenCorrectsAndSaves() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":1900,\"y\":900}"
+        ])
+        var frames: [NSRect] = []
+        let notifications = NotificationCenter()
+        let controller = makeController(
+            store: store,
+            visibleFrames: { frames },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        #expect(store.writeCount == 0)
+
+        frames = [NSRect(x: 0, y: 40, width: 1_440, height: 860)]
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        #expect(controller.panel?.frame == NSRect(x: 1_320, y: 780, width: 120, height: 120))
+        #expect(store.writeCount == 1)
+    }
+
+    @Test func sizeChangeWhileScreensAreUnavailablePreservesPendingRestorationIntent() {
+        let storedPosition = "{\"version\":1,\"x\":1900,\"y\":900}"
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: storedPosition
+        ])
+        var frames: [NSRect] = []
+        let notifications = NotificationCenter()
+        let controller = makeController(
+            store: store,
+            visibleFrames: { frames },
+            notificationCenter: notifications
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        controller.selectDisplaySize(.jumbo)
+
+        #expect(store.values[PetPreferenceKey.windowPosition] == storedPosition)
+        #expect(store.writeCount == 1)
+
+        frames = [NSRect(x: 0, y: 40, width: 1_440, height: 860)]
+        notifications.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        let expectedFrame = NSRect(x: 1_120, y: 580, width: 320, height: 320)
+        #expect(controller.panel?.frame == expectedFrame)
+        #expect(
+            PetWindowPosition.decode(store.values[PetPreferenceKey.windowPosition]!)?.origin
+                == expectedFrame.origin
+        )
+        #expect(store.writeCount == 2)
+    }
+
+    @Test func hideAndShowPreserveTheExactPositionWithoutWriting() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.windowPosition: "{\"version\":1,\"x\":320,\"y\":240}"
+        ])
+        let controller = makeController(
+            store: store,
+            visibleFrames: [NSRect(x: 0, y: 0, width: 1_440, height: 900)]
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let panel = controller.panel
+        let frame = panel?.frame
+
+        controller.hidePet()
+        controller.showPet()
+
+        #expect(controller.panel === panel)
+        #expect(controller.panel?.frame == frame)
+        #expect(store.writeCount == 0)
+    }
+
     @Test func showAndHideStartAndStopProximityDetectionWithTheSamePanel() {
         let detector = TestPointerProximityDetector()
         let controller = PetPanelController(
@@ -337,6 +611,26 @@ struct PetPanelControllerTests {
         #expect(model.displaySize == .large)
         #expect(model.mood == .resting)
         #expect(model.visualState == .idle)
+    }
+
+    private func makeController(
+        store: InMemoryPetPreferences,
+        visibleFrames: [NSRect]
+    ) -> PetPanelController {
+        makeController(store: store, visibleFrames: { visibleFrames })
+    }
+
+    private func makeController(
+        store: InMemoryPetPreferences,
+        visibleFrames: @escaping () -> [NSRect],
+        notificationCenter: NotificationCenter = NotificationCenter()
+    ) -> PetPanelController {
+        PetPanelController(
+            model: PetInteractionModel(preferences: store),
+            proximityDetector: TestPointerProximityDetector(),
+            visibleFrames: visibleFrames,
+            notificationCenter: notificationCenter
+        )
     }
 }
 
