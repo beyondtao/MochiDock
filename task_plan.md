@@ -30,14 +30,17 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 
 ### 当前正在做
 
-- 当前没有开发中的编号任务。MD-001 至 MD-008 均已完成并归档；阶段 2 已加入有限鼠标接近回应基线。
+- MD-009“宠物位置保存与安全恢复”首轮实现已交付；独立复核发现屏幕通知到达前 AppKit 已移动窗口时不会同步保存新位置，当前退回“开发中”。
 
 ### 下一步可能做
 
-- 根据真实使用体验选择下一项小型互动或基础设置改进；在用户确认前不创建或安排新任务。
+- 由用户正式安排 MD-009 开发；完成后先进行退出重启、尺寸变化和多屏安全恢复验收，再选择后续项目。
+- 后续候选为低打扰控制、启动与日常可达性、阶段 2 收口试用；不预先分配任务编号。
+- 详细提案见 [阶段 2 开发计划](docs/stage-2-development-plan.md)。
 
 ### 想法池，暂不承诺
 
+- 屏幕边缘躲藏与偷看：宠物主动藏到屏幕外，只露出脑袋偷偷观察用户；暂不实施，也不并入 MD-009。
 - 工具能力、AI、聊天、知识库和复杂智能体。
 
 ## 任务索引
@@ -52,6 +55,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-006 | 本地偏好持久化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-006-local-persistence-foundation.md) |
 | MD-007 | 英文与简体中文本地化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-007-localization-foundation.md) |
 | MD-008 | 有限鼠标接近回应 | 已完成 | [打开任务书](docs/tasks/completed/MD-008-limited-pointer-proximity-response.md) |
+| MD-009 | 宠物位置保存与安全恢复 | 开发中 | [打开任务书](docs/tasks/active/MD-009-pet-position-persistence-and-safe-restoration.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
 
@@ -74,6 +78,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 - [任务文档规则](docs/tasks/README.md)
 - [AI 开发连续性总结](sources/ai-development-mode-summary.md)
 - [MochiDock PM Skill 蓝图](skill-blueprints/mochidock-pm.md)
+- [阶段 2 开发计划（提案）](docs/stage-2-development-plan.md)
 
 ## 错误与恢复记录
 
