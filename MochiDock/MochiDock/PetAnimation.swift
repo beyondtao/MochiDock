@@ -12,6 +12,8 @@ enum PetAnimationState: Equatable {
     case jumpingUp
     case falling
     case recovering
+    case attentionTail
+    case attentionBase
 }
 
 enum PetVisualState: CaseIterable, Equatable {
@@ -19,6 +21,8 @@ enum PetVisualState: CaseIterable, Equatable {
     case halfBlink
     case fullBlink
     case happy
+    case attentionBase
+    case attentionTail
 }
 
 struct PetAnimationTiming: Equatable {
@@ -32,6 +36,8 @@ struct PetAnimationTiming: Equatable {
     let responseRise: TimeInterval
     let responseFall: TimeInterval
     let recoveryDuration: TimeInterval
+    let attentionTailDuration: TimeInterval
+    let attentionBaseDuration: TimeInterval
 
     static let standard = PetAnimationTiming(
         breathingPeakScale: 1.022,
@@ -43,7 +49,9 @@ struct PetAnimationTiming: Equatable {
         responseAnticipation: 0.10,
         responseRise: 0.16,
         responseFall: 0.18,
-        recoveryDuration: 0.12
+        recoveryDuration: 0.12,
+        attentionTailDuration: 0.22,
+        attentionBaseDuration: 0.55
     )
 }
 

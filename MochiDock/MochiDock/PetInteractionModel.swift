@@ -73,6 +73,8 @@ final class PetInteractionModel {
         case .anticipatingResponse: 0.94
         case .jumpingUp: 1.04
         case .falling: 1.015
+        case .attentionTail: 1.01
+        case .attentionBase: 1.005
         default: 1
         }
     }
@@ -81,6 +83,7 @@ final class PetInteractionModel {
         switch animationState {
         case .jumpingUp: -displaySize.pointLength * 0.08
         case .falling: -displaySize.pointLength * 0.02
+        case .attentionTail, .attentionBase: -displaySize.pointLength * 0.01
         default: 0
         }
     }
@@ -94,6 +97,8 @@ final class PetInteractionModel {
         case .jumpingUp: timing.responseRise
         case .falling: timing.responseFall
         case .recovering: timing.recoveryDuration
+        case .attentionTail: timing.attentionTailDuration
+        case .attentionBase: timing.attentionBaseDuration
         case .idle: 0
         }
     }
@@ -122,6 +127,26 @@ final class PetInteractionModel {
         schedule(after: timing.responseAnticipation) { model in
             model.beginJump()
         }
+    }
+
+    @discardableResult
+    func handleProximityEntry() -> Bool {
+        guard isPlaybackActive, !isResponseInProgress, !isAttentionInProgress else {
+            return false
+        }
+        cancelScheduledTransition()
+        mood = .resting
+        visualState = .attentionTail
+        animationState = .attentionTail
+        schedule(after: timing.attentionTailDuration) { model in
+            model.visualState = .attentionBase
+            model.animationState = .attentionBase
+            model.schedule(after: model.timing.attentionBaseDuration) { model in
+                model.completedBreathingCycles = 0
+                model.returnToIdleAndScheduleNextAction()
+            }
+        }
+        return true
     }
 
     func selectDisplaySize(_ size: PetDisplaySize) {
@@ -209,6 +234,13 @@ final class PetInteractionModel {
     private var isResponseInProgress: Bool {
         switch animationState {
         case .anticipatingResponse, .jumpingUp, .falling, .recovering: true
+        default: false
+        }
+    }
+
+    private var isAttentionInProgress: Bool {
+        switch animationState {
+        case .attentionTail, .attentionBase: true
         default: false
         }
     }

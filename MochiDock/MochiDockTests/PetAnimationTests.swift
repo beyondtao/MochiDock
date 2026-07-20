@@ -185,6 +185,41 @@ struct PetAnimationTests {
         model.startPlayback()
         #expect(scheduler.pendingCount == 1)
     }
+
+    @Test func proximityRunsOneTailBaseIdleSequenceAndRestoresAutomaticPlayback() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+
+        #expect(model.handleProximityEntry())
+        #expect(model.visualState == .attentionTail)
+        #expect(scheduler.pendingCount == 1)
+        scheduler.runNext()
+        #expect(model.visualState == .attentionBase)
+        scheduler.runNext()
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func proximityReplacesBlinkButCannotInterruptClickResponse() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+        for _ in 0..<PetAnimationTiming.standard.breathingCyclesPerBlink {
+            scheduler.runNext(); scheduler.runNext(); scheduler.runNext()
+        }
+        scheduler.runNext()
+        #expect(model.visualState == .halfBlink)
+
+        #expect(model.handleProximityEntry())
+        #expect(model.visualState == .attentionTail)
+        model.handleClick()
+        #expect(model.visualState == .happy)
+        #expect(model.handleProximityEntry() == false)
+        #expect(model.visualState == .happy)
+        #expect(scheduler.pendingCount == 1)
+    }
 }
 
 @MainActor

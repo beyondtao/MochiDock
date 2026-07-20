@@ -1,0 +1,9 @@
+Use case: precise-object-edit
+Asset type: isolated compositing component for MochiDock desktop-pet animation
+Input images: Image 1 defines the exact fur style, red-orange and cream colors, stripe pattern, lighting, and texture. Image 2 indicates only the modest amount of tail-tip lift.
+Primary request: Create ONLY one isolated red-panda tail, with a short natural root overlap stub. The tail must follow one simple continuous low arc from a root at the lower-left toward a tip at the upper-right. The outer tip is raised only moderately. It must read as one tail silhouette with no doubling back.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, uniform everywhere, with no shadows, gradients, texture, floor, reflections, or checkerboard.
+Composition/framing: square canvas; isolated tail placed in the right half with generous green space. Root at approximately 66% canvas width and 69% canvas height; tip at approximately 88% width and 52% height. Tail occupies no more than 28% of canvas width and 24% of canvas height.
+Style/medium: exact polished soft-fur 3D illustration style of Image 1.
+Constraints: one robust connected silhouette, natural thickness tapering slightly toward the tip, coherent stripes, short root stub suitable for hiding behind the haunch. Do not render any other body part. Do not use #00ff00 inside the tail.
+Avoid: U shape, horseshoe shape, C-shaped loop, hook, curl-back, folded tail, two visible branches, upright tail, excited pose, detached pieces, thin bridge, head, body, haunch, paw, shadow, text, logo, watermark.

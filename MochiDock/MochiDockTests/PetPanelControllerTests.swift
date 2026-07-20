@@ -4,6 +4,40 @@ import Testing
 
 @MainActor
 struct PetPanelControllerTests {
+    @Test func showAndHideStartAndStopProximityDetectionWithTheSamePanel() {
+        let detector = TestPointerProximityDetector()
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences()),
+            proximityDetector: detector
+        )
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let originalPanel = controller.panel
+        controller.hidePet()
+        controller.showPet()
+
+        #expect(detector.startCount == 2)
+        #expect(detector.stopCount == 1)
+        #expect(controller.panel === originalPanel)
+    }
+
+    @Test func panelPointerContactSuppressesThenResynchronizesProximityDetection() throws {
+        let detector = TestPointerProximityDetector()
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences()),
+            proximityDetector: detector
+        )
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let panel = try #require(controller.panel as? PetPanel)
+
+        panel.pointerContactChanged(true)
+        panel.pointerContactChanged(false)
+
+        #expect(detector.draggingChanges == [true, false])
+    }
+
     @Test func restoredSizeDefinesTheFirstPanelFrameAndMenuSelectionSource() {
         let store = InMemoryPetPreferences(
             values: [PetPreferenceKey.displaySize: PetDisplaySize.jumbo.rawValue]
@@ -304,4 +338,15 @@ struct PetPanelControllerTests {
         #expect(model.mood == .resting)
         #expect(model.visualState == .idle)
     }
+}
+
+@MainActor
+private final class TestPointerProximityDetector: PointerProximityDetecting {
+    private(set) var startCount = 0
+    private(set) var stopCount = 0
+    private(set) var draggingChanges: [Bool] = []
+
+    func start() { startCount += 1 }
+    func stop() { stopCount += 1 }
+    func setDragging(_ dragging: Bool) { draggingChanges.append(dragging) }
 }

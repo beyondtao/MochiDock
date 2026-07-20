@@ -21,6 +21,8 @@ enum PetDisplaySize: String, CaseIterable, Identifiable {
         case .halfBlink: prefix = "RedPandaProneHalfBlinkV04"
         case .fullBlink: prefix = "RedPandaProneFullBlinkV04"
         case .happy: prefix = "RedPandaProneHappyV04"
+        case .attentionBase: prefix = "RedPandaProneAttentionBaseV04"
+        case .attentionTail: prefix = "RedPandaProneAttentionTailV04"
         }
 
         let pixels: Int

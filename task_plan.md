@@ -21,8 +21,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | 阶段 | 目标 | 状态 |
 |---|---|---|
 | 阶段 0 | 建立 Xcode、Git 和项目记忆基础 | 已完成 |
-| 阶段 1 | 验证最小可体验桌面宠物 | 进行中 |
-| 阶段 2 | 根据体验完善互动与基础设置 | 未开始 |
+| 阶段 1 | 验证最小可体验桌面宠物 | 已完成 |
+| 阶段 2 | 根据体验完善互动与基础设置 | 进行中 |
 | 阶段 3 | 从真实需求选择一个小型工具场景 | 未开始 |
 | 阶段 4 | 在明确隐私、成本和降级方案后探索一个 AI 场景 | 未开始 |
 
@@ -30,19 +30,11 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 
 ### 当前正在做
 
-- `MD-001` 阶段 1A 最小桌面宠物：开发与自动验证完成，正在进行人工体验验收。
-- `MD-002` 正式角色静态接入与桌面尺寸验证：开发与独立自动验证完成，正在进行人工体验验收。
-- `MD-003` 隐藏与恢复菜单闭环：动态单菜单与当前 Space 启动显示修正已完成，等待人工体验验收。
-- 小熊猫角色母版 v0.3：基础造型已获用户正向确认并接入应用，正在验证桌面尺寸和透明边缘。
-- 阶段 1B 素材准备：v0.4 趴姿静态母版、半闭眼、全闭眼和开心趴姿三张动作母帧均已确认，并已生成各自 80/120/160/240/320 五档透明素材；呼吸和点击弹起继续采用程序化运动。素材准备已完成，尚未接入产品。
-- `MD-004` 趴姿接入、程序化呼吸与动画状态基础：开发、自动验证和人工验收均已完成；五档尺寸、App Icon 与 Asset Catalog 分类已就绪。
-- `MD-006` 本地偏好持久化基础：开发、自动验证和人工验收均已完成；五档尺寸可保存并在重启后恢复。
-- `MD-007` 英文与简体中文本地化基础：开发、自动验证、独立复核和用户检查均已完成；应用使用 String Catalog 并跟随 macOS 系统语言。
-- `MD-005` 眨眼与点击回应接入：素材稳定和运行时资源/几何动画隔离均已完成自动验证，当前重新进入用户动态体验验收。
+- 当前没有开发中的编号任务。MD-001 至 MD-008 均已完成并归档；阶段 2 已加入有限鼠标接近回应基线。
 
 ### 下一步可能做
 
-- 待趴姿待机和点击回应通过体验验证后，再评估一个有限鼠标响应，例如鼠标靠近时抬头或看向指针。
+- 根据真实使用体验选择下一项小型互动或基础设置改进；在用户确认前不创建或安排新任务。
 
 ### 想法池，暂不承诺
 
@@ -52,13 +44,14 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 
 | 编号 | 任务 | 状态 | 任务书 |
 |---|---|---|---|
-| MD-001 | 阶段 1A：最小桌面宠物 | 待验收 | [打开任务书](docs/tasks/active/MD-001-stage-1a-minimum-desktop-pet.md) |
-| MD-002 | 正式角色静态接入与桌面尺寸验证 | 待验收 | [打开任务书](docs/tasks/active/MD-002-static-character-integration.md) |
-| MD-003 | 隐藏与恢复菜单闭环 | 待验收 | [打开任务书](docs/tasks/active/MD-003-hide-show-menu-loop.md) |
+| MD-001 | 阶段 1A：最小桌面宠物 | 已完成 | [打开任务书](docs/tasks/completed/MD-001-stage-1a-minimum-desktop-pet.md) |
+| MD-002 | 正式角色静态接入与桌面尺寸验证 | 已完成 | [打开任务书](docs/tasks/completed/MD-002-static-character-integration.md) |
+| MD-003 | 隐藏与恢复菜单闭环 | 已完成 | [打开任务书](docs/tasks/completed/MD-003-hide-show-menu-loop.md) |
 | MD-004 | 动画播放与状态基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-004-animation-playback-foundation.md) |
-| MD-005 | 趴姿待机与点击回应接入 | 待验收 | [打开任务书](docs/tasks/active/MD-005-prone-idle-and-click-response.md) |
+| MD-005 | 趴姿待机与点击回应接入 | 已完成 | [打开任务书](docs/tasks/completed/MD-005-prone-idle-and-click-response.md) |
 | MD-006 | 本地偏好持久化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-006-local-persistence-foundation.md) |
 | MD-007 | 英文与简体中文本地化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-007-localization-foundation.md) |
+| MD-008 | 有限鼠标接近回应 | 已完成 | [打开任务书](docs/tasks/completed/MD-008-limited-pointer-proximity-response.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
 

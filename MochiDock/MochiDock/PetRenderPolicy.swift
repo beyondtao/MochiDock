@@ -29,6 +29,8 @@ enum PetRenderPolicy {
         case .jumpingUp: duration = timing.responseRise
         case .falling: duration = timing.responseFall
         case .recovering: duration = timing.recoveryDuration
+        case .attentionTail: duration = timing.attentionTailDuration
+        case .attentionBase: duration = timing.attentionBaseDuration
         case .idle, .blinkingHalfClosed, .blinkingClosed, .blinkingHalfOpen:
             return nil
         }

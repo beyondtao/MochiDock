@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "canvas": {
+    "width": 1254,
+    "height": 1254
+  },
+  "coordinateSystem": "top-left origin; x grows right; y grows down",
+  "reference": "asset/character/red-panda/master/v0.4/mochidock-red-panda-prone-master-v0.4.png",
+  "regions": {
+    "attentionHead": {
+      "role": "Only region allowed to change between idle and attention-base.",
+      "shape": "polygon",
+      "points": [[145, 270], [250, 244], [360, 302], [475, 280], [603, 245], [735, 282], [770, 420], [754, 565], [716, 685], [651, 748], [568, 786], [397, 793], [238, 752], [158, 650], [140, 500]],
+      "featherPixels": 10
+    },
+    "tailMotion": {
+      "role": "Union area reserved for removing the idle outer tail and writing the raised outer tail.",
+      "shape": "polygon",
+      "points": [[813, 568], [902, 520], [1030, 485], [1149, 520], [1204, 615], [1211, 748], [1181, 860], [1093, 933], [970, 953], [825, 920], [790, 835], [802, 704]],
+      "featherPixels": 10
+    },
+    "tailRootAnchor": {
+      "role": "Hard anchor that must remain connected and pixel-stable between attention-base and attention-tail.",
+      "shape": "polygon",
+      "points": [[803, 664], [844, 624], [897, 628], [936, 670], [944, 738], [928, 800], [890, 837], [842, 820], [810, 776], [798, 716]],
+      "featherPixels": 0
+    }
+  }
+}

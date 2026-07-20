@@ -93,6 +93,8 @@ struct PetDisplaySizeTests {
         #expect(size.resourceName(for: .halfBlink) == "RedPandaProneHalfBlinkV04_\(suffix)")
         #expect(size.resourceName(for: .fullBlink) == "RedPandaProneFullBlinkV04_\(suffix)")
         #expect(size.resourceName(for: .happy) == "RedPandaProneHappyV04_\(suffix)")
+        #expect(size.resourceName(for: .attentionBase) == "RedPandaProneAttentionBaseV04_\(suffix)")
+        #expect(size.resourceName(for: .attentionTail) == "RedPandaProneAttentionTailV04_\(suffix)")
     }
 
     @Test(arguments: PetDisplaySize.allCases)
