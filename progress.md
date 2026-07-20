@@ -2,6 +2,43 @@
 
 ## 2026-07-19
 
+### MD-004 开发启动
+
+- 用户已正式安排 `MD-004`，任务状态更新为“开发中”；不启动 `MD-005`。
+- 已完整读取根目录项目记录、MD-004/MD-005 任务书与素材规则，并确认 Git 基线为 `cfeea74a6ec84c819f71073b41648e084219bd0c`。
+- Git 工作区仅有用户声明的两个未跟踪试验目录：`asset/workbench/` 与 `asset/character/red-panda/master/v0.4-prone-candidate/`；本任务不触碰它们。
+- 三张 v0.4 正式预览源图分别为 80×80、120×120、160×160，均带 Alpha。
+- 首次源码盘点错误地按仓库根目录猜测测试和 Assets 路径，三个只读查询失败；已从文件清单确认工程实际嵌套在 `MochiDock/` 子目录，后续改用正确路径。
+- 实施遵循测试驱动开发：先新增能覆盖资源映射、状态推进、底部锚定与单循环调度的失败测试，确认 RED 后再写最小产品实现。
+- 已将逐步实施计划写入 `docs/superpowers/plans/2026-07-19-md-004-animation-playback-foundation.md`；采用单一可取消调度任务、模型负责状态、面板负责启停、视图只负责渲染的职责边界。
+- TDD RED 已确认：聚焦测试构建因新的 `PetInteractionModel(scheduler:)`、播放状态和调度协议尚不存在而失败，失败原因与预期缺失行为一致。
+- 首次 GREEN 构建暴露 Swift 主线程隔离错误：默认参数表达式不能创建 `@MainActor` 调度器。根因确认后改为无参数生产初始化器与显式测试注入初始化器，未放宽并发隔离。
+- 面板生命周期 RED 已确认：在撤下启停接线后，`repeatedShowAndSizeChangesKeepOnePlaybackSchedule` 与 `hideStopsPlaybackAndShowRestartsOneSchedule` 失败，其余原有面板测试通过；随后重新接入 Show/Hide 启停。
+- 最终 `MochiDockTests` 全套 40 项通过、0 失败；新测试覆盖实际状态推进、可注入调度、静止间隔、峰值上限、底部锚点、快速点击、Show/Hide 单循环、资源映射与运行时像素/Alpha。
+- 独立 `xcodebuild clean build` Debug 构建成功；`git diff --check` 通过；三档应用 PNG 与正式源文件哈希逐对一致。
+- 文件职责与行数已检查：产品源码最大 138 行，测试最大 219 行，均低于约 400 行职责复核阈值。
+- 实际启动确认默认显示单一 120 档 v0.4 趴姿窗口且无裁切；点击后自动恢复 Resting；通过应用菜单触发 Quit 成功。
+- Computer Use 三帧采样无法可靠辨别 2.2% 轻微起伏，因此实际呼吸可感度、底部稳定和纹理无闪烁仍需用户人工体验；状态栏尺寸菜单、Hide/Show 与真实拖动也未完成工具操作验证。
+
+### MD-004 大尺寸验收调整
+
+- 用户确认首轮交付无其他问题，但 160 在 16 英寸 MBP 上偏小，要求新增 240/320 两档；本轮保持 MD-004 “开发中”，未启动 MD-005。
+- TDD RED 已确认：尺寸与面板测试因 `PetDisplaySize.extraLarge` 与 `.jumbo` 尚不存在而编译失败，失败原因符合预期。
+- 已从已确认的 1254×1254 v0.4 透明母版确定性缩放生成 240/320 PNG，并新增对应 image set、尺寸枚举、资源映射与菜单标题；默认仍为 120。
+- 定向 GREEN 已确认：新增两档的资源加载、像素/Alpha、状态更新与面板尺寸测试通过。
+- 完整 `MochiDockTests` 测试套件通过、0 失败；干净 Debug 构建成功；`git diff --check` 通过。
+- `sips` 独立检查确认新资源分别为 240×240 与 320×320，均保留 Alpha。真实菜单切换观感仍留给用户人工验收。
+
+### MD-004 App Icon 与资源分类收尾
+
+- 用户要求补齐 1024×1024 App Icon，并解决 Asset Catalog 图片平铺、后续难查找与替换的问题；本轮继续归入 MD-004 收尾，未启动 MD-005。
+- 使用内置图像生成工具，以 v0.4 趴姿角色为身份与画风参考，生成温暖奶油背景的小熊猫头像 App Icon；不修改正式角色母版。
+- 生成工具原始输出为 1254×1254，与用户要求不符；已确定性缩放为真正的 1024×1024 不透明 PNG，再从该标准源图生成 macOS AppIcon 全部尺寸槽位。
+- 品牌源图保存于 `asset/brand/app-icon/v0.1/`；Asset Catalog 整理为 `System`与 `Characters/RedPanda/Prone/v0.4` 层级，未启用 namespace，现有资源名与 Swift 映射保持不变。
+- 首次干净 Debug 构建已通过，证明目录调整后 AppIcon 与角色资源仍能被 Asset Catalog 编译。
+- 最终完整 `MochiDockTests` 测试套件通过、0 失败；最新干净 Debug 构建成功；`git diff --check` 通过。
+- 构建产物 `Info.plist` 明确包含 `CFBundleIconName = AppIcon`；`Assets.car` 独立检查确认 16、32、128、256、512 的 1x/2x 图标 rendition 与 1024 最高分辨率均已编译，五档角色资源名与像素也保持正确。
+
 ### 阶段 1B 方向确认
 
 - 用户确认将小熊猫的常驻待机姿势从站立改为趴着，认为站立不适合长时间待机。

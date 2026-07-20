@@ -7,10 +7,17 @@ struct PetView: View {
         Image(model.displaySize.resourceName)
             .resizable()
             .scaledToFit()
-            .scaleEffect(model.mood == .happy ? 1.03 : 1)
-            .offset(y: model.mood == .happy ? -2 : 0)
+            .scaleEffect(
+                x: model.horizontalScale * model.responseScale,
+                y: model.verticalScale * model.responseScale,
+                anchor: model.scaleAnchor
+            )
+            .offset(y: model.responseOffset)
             .brightness(model.mood == .happy ? 0.025 : 0)
-            .animation(.easeOut(duration: 0.16), value: model.mood)
+            .animation(
+                .easeInOut(duration: model.transitionDuration),
+                value: model.animationState
+            )
             .frame(
                 width: model.displaySize.pointLength,
                 height: model.displaySize.pointLength

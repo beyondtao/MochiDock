@@ -4,6 +4,36 @@ import Testing
 
 @MainActor
 struct PetPanelControllerTests {
+    @Test func repeatedShowAndSizeChangesKeepOnePlaybackSchedule() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler)
+        let controller = PetPanelController(model: model)
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+        controller.showPet()
+        controller.selectDisplaySize(.small)
+        controller.selectDisplaySize(.large)
+
+        #expect(scheduler.pendingCount == 1)
+        #expect(scheduler.totalScheduled == 1)
+    }
+
+    @Test func hideStopsPlaybackAndShowRestartsOneSchedule() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler)
+        let controller = PetPanelController(model: model)
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        controller.hidePet()
+        #expect(scheduler.pendingCount == 0)
+
+        controller.showPet()
+        controller.showPet()
+        #expect(scheduler.pendingCount == 1)
+    }
+
     @Test func showPetConfiguresTransparentMovablePanel() {
         let controller = PetPanelController(model: PetInteractionModel())
 
@@ -50,6 +80,8 @@ struct PetPanelControllerTests {
         (PetDisplaySize.small, CGFloat(80)),
         (PetDisplaySize.medium, CGFloat(120)),
         (PetDisplaySize.large, CGFloat(160)),
+        (PetDisplaySize.extraLarge, CGFloat(240)),
+        (PetDisplaySize.jumbo, CGFloat(320)),
     ])
     func selectingSizeUpdatesPanelDimensions(size: PetDisplaySize, pointLength: CGFloat) {
         let controller = PetPanelController(model: PetInteractionModel())

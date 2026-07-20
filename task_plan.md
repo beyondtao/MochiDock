@@ -34,8 +34,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 - `MD-002` 正式角色静态接入与桌面尺寸验证：开发与独立自动验证完成，正在进行人工体验验收。
 - `MD-003` 隐藏与恢复菜单闭环：动态单菜单与当前 Space 启动显示修正已完成，等待人工体验验收。
 - 小熊猫角色母版 v0.3：基础造型已获用户正向确认并接入应用，正在验证桌面尺寸和透明边缘。
-- 阶段 1B 素材准备：v0.4 “趴着待机”正式静态母版及 80/120/160 三档透明素材已完成；呼吸改用同一素材的程序化纵向起伏，后续只需制作偶尔眨眼和点击开心的透明帧素材。
-- `MD-004` 趴姿接入、程序化呼吸与动画状态基础：任务书已按已确认预览更新，等待用户安排开发试用。
+- 阶段 1B 素材准备：v0.4 “趴着待机”正式静态母版及 80/120/160/240/320 五档透明素材已完成；呼吸改用同一素材的程序化纵向起伏，后续只需制作偶尔眨眼和点击开心的透明帧素材。
+- `MD-004` 趴姿接入、程序化呼吸与动画状态基础：开发中；验收调整中新增 240/320 两档大尺寸，并补齐 App Icon 与 Asset Catalog 分类，默认仍为 120。
 - `MD-005` 眨眼与点击回应接入：任务书已更新，需要相关素材与 `MD-004` 就绪后安排。
 
 ### 下一步可能做
@@ -53,7 +53,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-001 | 阶段 1A：最小桌面宠物 | 待验收 | [打开任务书](docs/tasks/active/MD-001-stage-1a-minimum-desktop-pet.md) |
 | MD-002 | 正式角色静态接入与桌面尺寸验证 | 待验收 | [打开任务书](docs/tasks/active/MD-002-static-character-integration.md) |
 | MD-003 | 隐藏与恢复菜单闭环 | 待验收 | [打开任务书](docs/tasks/active/MD-003-hide-show-menu-loop.md) |
-| MD-004 | 动画播放与状态基础 | 待用户安排 | [打开任务书](docs/tasks/active/MD-004-animation-playback-foundation.md) |
+| MD-004 | 动画播放与状态基础 | 开发中 | [打开任务书](docs/tasks/active/MD-004-animation-playback-foundation.md) |
 | MD-005 | 趴姿待机与点击回应接入 | 待用户安排 | [打开任务书](docs/tasks/active/MD-005-prone-idle-and-click-response.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
@@ -83,3 +83,9 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | 问题 | 处理方式 |
 |---|---|
 | `G_MochiDock` 隐藏项目目录中曾生成的规划文件未保留在当前磁盘视图 | 从对应历史任务的已确认讨论中恢复规划，并写入当前本地仓库 |
+| MD-004 首次源码盘点按仓库根目录猜测测试与 Assets 路径，因 Xcode 工程实际位于 `MochiDock/` 子目录而失败 | 使用 `rg --files MochiDock` 确认真实路径，后续改用 `MochiDock/MochiDock` 与 `MochiDock/MochiDockTests` |
+| MD-004 首次 GREEN 构建中，默认参数表达式在非隔离上下文创建 `@MainActor` 调度器而编译失败 | 移除调度器默认参数；以无参数初始化器在模型主线程上下文组装生产调度器，显式初始化器继续服务测试注入 |
+| MD-004 第二次 GREEN 构建中测试辅助器无法解析 `TimeInterval`，并保留 timing 默认参数隔离警告 | 测试显式导入 `Foundation`；将 timing 默认值移入主线程隔离的重载初始化器 |
+| MD-004 第三次 GREEN 构建中测试直接比较 `UnitPoint.bottom` 但未导入定义模块 | 测试显式导入 `SwiftUI`；产品模块已在该次构建中通过编译 |
+| MD-004 资源像素测试读取资产目录 `NSImage.representations.first`，三档均失败；结果附件提取又因工具写入权限被沙箱拒绝 | 改为请求实际运行时 `CGImage` 并验证宽、高和 Alpha 信息，避免依赖资产代理 representation；源 PNG 已另由 `sips` 验证 |
+| MD-004 大尺寸复验时 `xcresulttool` 汇总尝试因 TestReport 写入权限失败 | 不依赖该附加汇总；以完整 `xcodebuild test` 的退出码 0、`TEST SUCCEEDED` 和逐项通过输出作为正式验证证据 |

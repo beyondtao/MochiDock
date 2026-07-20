@@ -17,10 +17,12 @@ final class PetPanelController {
     func showPet() {
         let panel = panel ?? makePanel()
         panel.orderFrontRegardless()
+        model.startPlayback()
     }
 
     func hidePet() {
         panel?.orderOut(nil)
+        model.stopPlayback()
     }
 
     func togglePetVisibility() {

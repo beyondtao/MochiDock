@@ -124,3 +124,14 @@
 - `mochidock-pm` 第一版蓝图已写入 `skill-blueprints/mochidock-pm.md`。
 - 用户确认把 Skill 放在集中式仓库 `/Users/tao/Projects/Working/skills/mochidock-pm/`，并通过 `~/.agents/skills/mochidock-pm` 发现。
 - 官方快速校验通过；独立前向测试确认 Skill 能控制范围、保留用户决策权并阻止未经确认的立即实施。
+
+## MD-004 工程实现结论
+
+- 阶段 1B 动画基础采用单一可取消调度任务：模型拥有待机、吸气、呼气、短促回应和恢复状态；面板只在 Show/Hide 时启动或停止，重复 Show 与尺寸切换不会新增循环。
+- 呼吸参数集中在 `PetAnimationTiming.standard`：纵向峰值 `1.022`、吸气 `1.35s`、呼气 `1.55s`、静止间隔 `3.8s`；横向比例固定 `1.0`，SwiftUI 缩放锚点为 `.bottom`。
+- 点击沿用现有轻微放大、上移和亮度反馈，但改为单次有界回应后自动恢复；回应中连续点击被忽略，不形成动作队列。
+- Hide 会取消当前待执行任务并复位动画几何状态；为保留既有交互契约，当前 mood 不会在 Hide 瞬间被清除，Show 后若为 happy 会恢复一个有界回应并自动回待机。
+- v0.4 三档应用资源与正式预览源文件逐对 SHA-256 一致；运行时测试验证 80/120/160 像素和 Alpha。
+- 用户在 16 英寸 MBP 上体验后认为 160 仍偏小，确认在 MD-004 内新增 240/320 两档；默认 120 不变，动画、面板与菜单机制不变。
+- 用户要求为应用补齐 1024×1024 App Icon，并将 Asset Catalog 从平铺列表改为可扩展分类。图标采用与 v0.4 一致的趴姿小熊猫头像、暖奶油背景；最终源图为 1024×1024 不透明 PNG，无文字、无额外物件。
+- Asset Catalog 分类确认为 `System/{AppIcon, AccentColor}` 与 `Characters/RedPanda/Prone/v0.4/{80,120,160,240,320}`；目录不启用 namespace，因此保持现有运行时资源名。

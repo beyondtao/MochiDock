@@ -11,9 +11,11 @@ struct PetDisplaySizeTests {
     }
 
     @Test(arguments: [
-        (PetDisplaySize.small, "RedPandaMaster80", CGFloat(80)),
-        (PetDisplaySize.medium, "RedPandaMaster120", CGFloat(120)),
-        (PetDisplaySize.large, "RedPandaMaster160", CGFloat(160)),
+        (PetDisplaySize.small, "RedPandaProneV04_80", CGFloat(80)),
+        (PetDisplaySize.medium, "RedPandaProneV04_120", CGFloat(120)),
+        (PetDisplaySize.large, "RedPandaProneV04_160", CGFloat(160)),
+        (PetDisplaySize.extraLarge, "RedPandaProneV04_240", CGFloat(240)),
+        (PetDisplaySize.jumbo, "RedPandaProneV04_320", CGFloat(320)),
     ])
     func sizeMapsToResourceAndPointLength(
         size: PetDisplaySize,
@@ -45,5 +47,25 @@ struct PetDisplaySizeTests {
     @Test(arguments: PetDisplaySize.allCases)
     func resourceImageLoadsFromApplicationBundle(size: PetDisplaySize) {
         #expect(NSImage(named: size.resourceName) != nil)
+    }
+
+    @Test(arguments: [
+        (PetDisplaySize.small, 80),
+        (PetDisplaySize.medium, 120),
+        (PetDisplaySize.large, 160),
+        (PetDisplaySize.extraLarge, 240),
+        (PetDisplaySize.jumbo, 320),
+    ])
+    func proneResourceHasExpectedPixelsAndAlpha(size: PetDisplaySize, pixels: Int) throws {
+        let image = try #require(NSImage(named: size.resourceName))
+        let cgImage = try #require(
+            image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        )
+
+        #expect(cgImage.width == pixels)
+        #expect(cgImage.height == pixels)
+        #expect(cgImage.alphaInfo != .none)
+        #expect(cgImage.alphaInfo != .noneSkipFirst)
+        #expect(cgImage.alphaInfo != .noneSkipLast)
     }
 }
