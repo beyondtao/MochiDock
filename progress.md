@@ -2,6 +2,34 @@
 
 ## 2026-07-20
 
+### MD-007 人工验收完成
+
+- 用户检查 MD-007 英文与简体中文本地化结果并确认没有问题。
+- 提交前独立复核未发现 Critical、Important 或 Minor 代码问题；重新运行完整 `MochiDockTests` 退出码 0、`TEST SUCCEEDED`，独立干净 Debug 构建退出码 0、`CLEAN SUCCEEDED`、`BUILD SUCCEEDED`。
+- 构建产物包含英文和简体中文本地化资源；偏好键、五个尺寸 raw value、点数和资源名保持不变，`git diff --check` 通过。
+- MD-007 状态由“开发中”更新为“已完成”，任务书归档至 `docs/tasks/completed/`。
+- 未启动 MD-005。
+
+### MD-007 开发启动
+
+- 用户已正式安排 `MD-007`，任务状态更新为“开发中”；不启动 `MD-005`。
+- 已核对 Git 基线 `51aa976`：`main` 比 `origin/main` 领先两个本地提交，启动时工作区干净；本任务不提交、不推送。
+- 已完整读取项目记录、任务规则、MD-007 任务书、适用 Skills、全部现有产品 Swift 源码、单元测试和 Xcode 工程配置；仓库内未发现 `AGENTS.md`。
+- 启动盘点确认英文开发区域已存在，但尚无 String Catalog 或简体中文区域；12 类运行时展示文案仍由源码英文硬编码提供。
+- 实施限定为 Apple 原生 String Catalog 与 SwiftUI/Foundation 本地化类型，不新增语言切换器、第三方依赖、第二份面板/尺寸状态或通用字符串工具容器。
+
+### MD-007 开发交付
+
+- TDD RED：Catalog 文件/搜索检查均退出 1；运行时本地化测试首次构建退出 65，明确因 `PetMood.accessibilityValue` 与所需原生本地化接口不存在而失败。受限沙箱内的签名/宏服务失败与一次测试宿主挂起未计作功能 RED。
+- 最小 GREEN：新增 `Localizable.xcstrings`，工程 `knownRegions` 只增加 `zh-Hans`；菜单动态标题、尺寸展示和 mood 无障碍值改用 `LocalizedStringResource`，无障碍标签继续由 SwiftUI 原生本地化字符串输入处理。
+- 最终 `build-for-testing` 退出 0；全套 45 项、7 个 `MochiDockTests` 退出 0，输出 `TEST EXECUTE SUCCEEDED`，0 失败。
+- 全新派生目录执行 `xcodebuild clean build` 退出 0，输出 `BUILD SUCCEEDED`；构建产物声明 `en`、`zh-Hans` 并包含两份 `Localizable.strings`，逐项内容与 Catalog 一致。
+- 实际英文与简体中文 Debug 启动的无障碍树分别确认 `MochiDock pet` / `Resting` 和 `MochiDock 宠物` / `休息中`；两次启动前后生产偏好仍为稳定值 `jumbo`。Computer Use 无法访问 MenuBarExtra，菜单、五档勾选与短暂 Happy 状态未完成目视验证。
+- 只读代码审查未发现 Critical 或 Important 问题；审查建议收紧缺译回退测试，已改为 `value: nil` 后重新跑完 45 项测试通过。
+- `git diff --check` 通过；产品源码最大 172 行、测试最大 280 行，无职责集中风险。`project.pbxproj` 仅新增 `zh-Hans` known region；未出现依赖、签名、Bundle Identifier、deployment target 或 Release 配置变化。
+- 受保护契约与 `51aa976` 对比不变：`pet.displaySize`、`small`、`medium`、`large`、`extraLarge`、`jumbo` 和五个 `RedPandaProneV04_*` 资源名均保持原值。
+- MD-007 状态保持“开发中”，等待用户验收；未提交、未推送、未启动 MD-005。
+
 ### MD-006 人工验收完成
 
 - 用户完成 MD-006 建议人工验证并确认没有问题，包括尺寸菜单与切换、退出重启恢复、启动表现和重复 Hide/Show 场景。

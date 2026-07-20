@@ -28,7 +28,7 @@ struct PetView: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("MochiDock pet")
-            .accessibilityValue(model.mood == .resting ? "Resting" : "Happy")
+            .accessibilityValue(Text(model.mood.accessibilityValue))
     }
 }
 

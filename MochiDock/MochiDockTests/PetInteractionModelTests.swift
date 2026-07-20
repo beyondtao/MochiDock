@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import MochiDock
 
@@ -34,5 +35,18 @@ struct PetInteractionModelTests {
         scheduler.runNext()
 
         #expect(model.mood == .resting)
+    }
+
+    @Test func moodAccessibilityValuesAreLocalized() {
+        #expect(localized(PetMood.resting.accessibilityValue) == localizedKey("Resting"))
+        #expect(localized(PetMood.happy.accessibilityValue) == localizedKey("Happy"))
+    }
+
+    private func localized(_ resource: LocalizedStringResource) -> String {
+        String(localized: resource)
+    }
+
+    private func localizedKey(_ key: String) -> String {
+        Bundle.main.localizedString(forKey: key, value: key, table: nil)
     }
 }

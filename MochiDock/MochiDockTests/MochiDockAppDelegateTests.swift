@@ -30,16 +30,16 @@ struct MochiDockAppDelegateTests {
         let toggleAction: (MochiDockAppDelegate) -> () -> Void = MochiDockAppDelegate.togglePetVisibility
         requireObservable(appDelegate)
 
-        #expect(appDelegate.petVisibilityActionTitle == "Show Pet")
+        #expect(localized(appDelegate.petVisibilityActionTitle) == localizedKey("Show Pet"))
 
         appDelegate.showPet()
-        #expect(appDelegate.petVisibilityActionTitle == "Hide Pet")
+        #expect(localized(appDelegate.petVisibilityActionTitle) == localizedKey("Hide Pet"))
 
         appDelegate.togglePetVisibility()
-        #expect(appDelegate.petVisibilityActionTitle == "Show Pet")
+        #expect(localized(appDelegate.petVisibilityActionTitle) == localizedKey("Show Pet"))
 
         appDelegate.togglePetVisibility()
-        #expect(appDelegate.petVisibilityActionTitle == "Hide Pet")
+        #expect(localized(appDelegate.petVisibilityActionTitle) == localizedKey("Hide Pet"))
         _ = toggleAction
     }
 
@@ -52,4 +52,12 @@ struct MochiDockAppDelegateTests {
     }
 
     private func requireObservable<T: ObservableObject>(_ value: T) {}
+
+    private func localized(_ resource: LocalizedStringResource) -> String {
+        String(localized: resource)
+    }
+
+    private func localizedKey(_ key: String) -> String {
+        Bundle.main.localizedString(forKey: key, value: key, table: nil)
+    }
 }

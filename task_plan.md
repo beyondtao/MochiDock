@@ -37,7 +37,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 - 阶段 1B 素材准备：v0.4 “趴着待机”正式静态母版及 80/120/160/240/320 五档透明素材已完成；呼吸改用同一素材的程序化纵向起伏，后续只需制作偶尔眨眼和点击开心的透明帧素材。
 - `MD-004` 趴姿接入、程序化呼吸与动画状态基础：开发中；验收调整中新增 240/320 两档大尺寸，并补齐 App Icon 与 Asset Catalog 分类，默认仍为 120。
 - `MD-006` 本地偏好持久化基础：开发、自动验证和人工验收均已完成；五档尺寸可保存并在重启后恢复。
-- `MD-007` 英文与简体中文本地化基础：任务范围已确认，已满足 MD-006 前置条件；使用 String Catalog、跟随 macOS 系统语言，不增加应用内语言切换，等待用户安排开发。
+- `MD-007` 英文与简体中文本地化基础：开发、自动验证、独立复核和用户检查均已完成；应用使用 String Catalog 并跟随 macOS 系统语言。
 - `MD-005` 眨眼与点击回应接入：任务书已更新，需要相关素材与 `MD-004` 就绪后安排。
 
 ### 下一步可能做
@@ -58,7 +58,7 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-004 | 动画播放与状态基础 | 开发中 | [打开任务书](docs/tasks/active/MD-004-animation-playback-foundation.md) |
 | MD-005 | 趴姿待机与点击回应接入 | 待用户安排 | [打开任务书](docs/tasks/active/MD-005-prone-idle-and-click-response.md) |
 | MD-006 | 本地偏好持久化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-006-local-persistence-foundation.md) |
-| MD-007 | 英文与简体中文本地化基础 | 待用户安排 | [打开任务书](docs/tasks/active/MD-007-localization-foundation.md) |
+| MD-007 | 英文与简体中文本地化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-007-localization-foundation.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
 

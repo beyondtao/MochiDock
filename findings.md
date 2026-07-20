@@ -160,3 +160,10 @@
 - 本地化展示文本不得改变 `pet.displaySize`、五个 `PetDisplaySize.rawValue`、资源名称或其他稳定程序标识。
 - 德语、繁体中文、日语和其他语言留在想法池，根据目标用户与发布计划另行确认。
 - 该决策形成 `MD-007`，建议顺序为：完成 MD-006 人工验收，实施 MD-007，再继续 MD-005。
+- MD-007 启动盘点确认：`developmentRegion` 已为 `en`，工程使用文件系统同步分组且开启 String Catalog 支持；当前没有 `.xcstrings`，`knownRegions` 仅有 `en` 与 `Base`。
+- 当前运行时用户可见文案集中在动态 `Show Pet` / `Hide Pet`、`Pet Size`、`Quit MochiDock`、五档尺寸展示名、`MochiDock pet` 无障碍标签及 `Resting` / `Happy` 状态值；Preview 名称不在本地化范围。
+- 展示名称与稳定契约已分离：`pet.displaySize`、五个 `PetDisplaySize.rawValue` 与五个角色资源名均无需因本地化修改。
+- MD-007 最终实现使用一个 `Localizable.xcstrings` 提供 12 个英文源键与简体中文翻译；构建产物的 `Bundle.localizations` 为 `en`、`zh-Hans`，且包含对应两份编译后 `Localizable.strings`。
+- 动态显示/隐藏标题仍直接读取 `PetPanelController.isPetVisible`；尺寸展示只把 `menuTitle` 改为 `LocalizedStringResource`，偏好键、raw value、点数、资源名和保存时机未改变。
+- 实际双语启动的无障碍树分别显示 `MochiDock pet` / `Resting` 与 `MochiDock 宠物` / `休息中`；当前 Computer Use 不能访问 MenuBarExtra，菜单目视与短暂 Happy 状态仍需人工验收。
+- 用户完成 MD-007 实际检查并确认没有问题；独立提交前复核未发现 Critical、Important 或 Minor 代码问题，MD-007 于 2026-07-20 验收完成。

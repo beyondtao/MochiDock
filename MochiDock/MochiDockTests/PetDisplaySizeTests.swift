@@ -35,6 +35,22 @@ struct PetDisplaySizeTests {
         #expect(model.displaySize == size)
     }
 
+    @Test(arguments: [
+        (PetDisplaySize.small, "Small — 80", "小 — 80"),
+        (PetDisplaySize.medium, "Medium — 120", "中 — 120"),
+        (PetDisplaySize.large, "Large — 160", "大 — 160"),
+        (PetDisplaySize.extraLarge, "Extra Large — 240", "超大 — 240"),
+        (PetDisplaySize.jumbo, "Jumbo — 320", "特大 — 320"),
+    ])
+    func sizeMenuTitlesAreLocalizedWithoutChangingStableValues(
+        size: PetDisplaySize,
+        english: String,
+        simplifiedChinese: String
+    ) {
+        #expect(localized(size.menuTitle) == localizedKey(english))
+        #expect(localizedKey(english, localization: "zh-Hans") == simplifiedChinese)
+    }
+
     @Test func selectingSizeDoesNotResetMood() {
         let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         model.handleClick()
@@ -67,5 +83,21 @@ struct PetDisplaySizeTests {
         #expect(cgImage.alphaInfo != .none)
         #expect(cgImage.alphaInfo != .noneSkipFirst)
         #expect(cgImage.alphaInfo != .noneSkipLast)
+    }
+
+    private func localized(_ resource: LocalizedStringResource) -> String {
+        String(localized: resource)
+    }
+
+    private func localizedKey(_ key: String) -> String {
+        Bundle.main.localizedString(forKey: key, value: key, table: nil)
+    }
+
+    private func localizedKey(_ key: String, localization: String) -> String? {
+        guard
+            let path = Bundle.main.path(forResource: localization, ofType: "lproj"),
+            let bundle = Bundle(path: path)
+        else { return nil }
+        return bundle.localizedString(forKey: key, value: key, table: nil)
     }
 }

@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 enum PetDisplaySize: String, CaseIterable, Identifiable {
     case small
@@ -29,7 +30,7 @@ enum PetDisplaySize: String, CaseIterable, Identifiable {
         }
     }
 
-    var menuTitle: String {
+    var menuTitle: LocalizedStringResource {
         switch self {
         case .small: "Small — 80"
         case .medium: "Medium — 120"

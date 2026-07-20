@@ -69,7 +69,7 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
     }
 
     var displaySize: PetDisplaySize { model.displaySize }
-    var petVisibilityActionTitle: String {
+    var petVisibilityActionTitle: LocalizedStringResource {
         panelController.isPetVisible ? "Hide Pet" : "Show Pet"
     }
 

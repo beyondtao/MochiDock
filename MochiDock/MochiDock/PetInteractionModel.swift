@@ -4,6 +4,13 @@ import SwiftUI
 enum PetMood: Equatable {
     case resting
     case happy
+
+    var accessibilityValue: LocalizedStringResource {
+        switch self {
+        case .resting: "Resting"
+        case .happy: "Happy"
+        }
+    }
 }
 
 @MainActor
