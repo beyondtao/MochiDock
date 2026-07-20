@@ -168,6 +168,31 @@ struct PetPanelControllerTests {
         #expect(controller.panel === originalPanel)
     }
 
+    @Test func rapidSizeChangesReusePanelModelAndHostingViewWithNoWindowAnimation() {
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
+        let controller = PetPanelController(model: model)
+        controller.showPet()
+        defer { controller.panel?.close() }
+        let originalPanel = controller.panel
+        let originalContentView = originalPanel?.contentView
+        let originalCenter = NSPoint(
+            x: originalPanel?.frame.midX ?? 0,
+            y: originalPanel?.frame.midY ?? 0
+        )
+
+        for size in PetDisplaySize.allCases + PetDisplaySize.allCases.reversed() {
+            controller.selectDisplaySize(size)
+        }
+
+        #expect(controller.panel === originalPanel)
+        #expect(controller.panel?.contentView === originalContentView)
+        #expect(controller.panel?.animationBehavior == NSWindow.AnimationBehavior.none)
+        #expect(model.displaySize == .small)
+        #expect(controller.panel?.frame.size == NSSize(width: 80, height: 80))
+        #expect(controller.panel?.frame.midX == originalCenter.x)
+        #expect(controller.panel?.frame.midY == originalCenter.y)
+    }
+
     @Test func hideMakesTheExistingPanelInvisibleWithoutReleasingIt() {
         let controller = PetPanelController(
             model: PetInteractionModel(preferences: InMemoryPetPreferences())
@@ -197,7 +222,7 @@ struct PetPanelControllerTests {
         #expect(controller.panel?.isVisible == true)
     }
 
-    @Test func hideAndShowPreserveSizeAndMood() {
+    @Test func hideAndShowPreserveSizeAndRestoreIdlePlayback() {
         let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
         controller.showPet()
@@ -210,7 +235,8 @@ struct PetPanelControllerTests {
 
         #expect(model.displaySize == .large)
         #expect(controller.panel?.frame.size == NSSize(width: 160, height: 160))
-        #expect(model.mood == .happy)
+        #expect(model.mood == .resting)
+        #expect(model.visualState == .idle)
     }
 
     @Test func repeatedHideAndShowReusesOnePanel() {
@@ -262,7 +288,7 @@ struct PetPanelControllerTests {
         #expect(controller.panel === originalPanel)
     }
 
-    @Test func togglePreservesSizeAndMood() {
+    @Test func togglePreservesSizeAndRestoresIdlePlayback() {
         let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
         controller.showPet()
@@ -275,6 +301,7 @@ struct PetPanelControllerTests {
 
         #expect(controller.panel?.frame.size == NSSize(width: 160, height: 160))
         #expect(model.displaySize == .large)
-        #expect(model.mood == .happy)
+        #expect(model.mood == .resting)
+        #expect(model.visualState == .idle)
     }
 }

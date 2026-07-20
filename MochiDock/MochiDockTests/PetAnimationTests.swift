@@ -74,17 +74,115 @@ struct PetAnimationTests {
 
         for _ in 0..<20 { model.handleClick() }
 
-        #expect(model.animationState == .responding)
+        #expect(model.animationState == .anticipatingResponse)
         #expect(model.mood == .happy)
         #expect(scheduler.pendingCount == 1)
 
-        scheduler.runNext()
-        #expect(model.animationState == .recovering)
-        #expect(model.mood == .resting)
-
-        scheduler.runNext()
+        for _ in 0..<4 { scheduler.runNext() }
         #expect(model.animationState == .idle)
         #expect(model.mood == .resting)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func blinkUsesTheConfirmedVisualSequenceAndReturnsToPausedIdle() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+
+        for _ in 0..<PetAnimationTiming.standard.breathingCyclesPerBlink {
+            scheduler.runNext()
+            scheduler.runNext()
+            scheduler.runNext()
+        }
+        scheduler.runNext()
+
+        #expect(model.visualState == .halfBlink)
+        scheduler.runNext()
+        #expect(model.visualState == .fullBlink)
+        scheduler.runNext()
+        #expect(model.visualState == .halfBlink)
+        scheduler.runNext()
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(scheduler.scheduledDelays.last == PetAnimationTiming.standard.idlePause)
+    }
+
+    @Test func clickRunsOneBoundedHappyJumpThenRestoresIdleBreathing() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+
+        model.handleClick()
+        #expect(model.visualState == .happy)
+        #expect(model.animationState == .anticipatingResponse)
+        #expect(model.verticalScale < 1)
+
+        scheduler.runNext()
+        #expect(model.animationState == .jumpingUp)
+        #expect(model.responseOffset < 0)
+        scheduler.runNext()
+        #expect(model.animationState == .falling)
+        scheduler.runNext()
+        #expect(model.animationState == .recovering)
+        scheduler.runNext()
+
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(model.verticalScale == 1)
+        #expect(model.responseOffset == 0)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func clickInterruptsBlinkAndCancelledBlinkCannotResume() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+        for _ in 0..<PetAnimationTiming.standard.breathingCyclesPerBlink {
+            scheduler.runNext()
+            scheduler.runNext()
+            scheduler.runNext()
+        }
+        scheduler.runNext()
+        #expect(model.visualState == .halfBlink)
+
+        model.handleClick()
+        #expect(model.visualState == .happy)
+        #expect(scheduler.pendingCount == 1)
+
+        scheduler.runNext()
+        #expect(model.animationState == .jumpingUp)
+        #expect(model.visualState == .happy)
+    }
+
+    @Test func rapidClicksKeepOneBoundedResponseSchedule() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+
+        for _ in 0..<100 { model.handleClick() }
+
+        #expect(scheduler.pendingCount == 1)
+        #expect(scheduler.totalScheduled == 2)
+        for _ in 0..<4 { scheduler.runNext() }
+        #expect(model.animationState == .idle)
+        #expect(model.visualState == .idle)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func stopDuringActionCancelsAndShowRestartsOnlyOneIdleSchedule() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
+        model.startPlayback()
+        model.handleClick()
+
+        model.stopPlayback()
+        #expect(model.animationState == .idle)
+        #expect(model.visualState == .idle)
+        #expect(model.mood == .resting)
+        #expect(scheduler.pendingCount == 0)
+
+        model.startPlayback()
+        model.startPlayback()
         #expect(scheduler.pendingCount == 1)
     }
 }

@@ -36,21 +36,32 @@ final class PetPanelController {
     func selectDisplaySize(_ size: PetDisplaySize) {
         guard model.displaySize != size else { return }
 
-        model.selectDisplaySize(size)
-        guard let panel else { return }
+        guard let panel else {
+            withTransaction(PetRenderPolicy.displaySizeTransaction) {
+                model.selectDisplaySize(size)
+            }
+            return
+        }
 
         let center = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
         let length = size.pointLength
-        panel.setFrame(
-            NSRect(
-                x: center.x - length / 2,
-                y: center.y - length / 2,
-                width: length,
-                height: length
-            ),
-            display: true,
-            animate: false
+        let frame = NSRect(
+            x: center.x - length / 2,
+            y: center.y - length / 2,
+            width: length,
+            height: length
         )
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0
+            context.allowsImplicitAnimation = false
+            withTransaction(PetRenderPolicy.displaySizeTransaction) {
+                model.selectDisplaySize(size)
+                panel.setFrame(frame, display: false, animate: false)
+                panel.contentView?.layoutSubtreeIfNeeded()
+            }
+        }
+        panel.displayIfNeeded()
     }
 
     private func makePanel() -> NSPanel {
@@ -68,6 +79,7 @@ final class PetPanelController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
+        panel.animationBehavior = NSWindow.AnimationBehavior.none
         panel.isMovableByWindowBackground = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces]

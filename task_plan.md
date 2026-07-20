@@ -34,11 +34,11 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 - `MD-002` 正式角色静态接入与桌面尺寸验证：开发与独立自动验证完成，正在进行人工体验验收。
 - `MD-003` 隐藏与恢复菜单闭环：动态单菜单与当前 Space 启动显示修正已完成，等待人工体验验收。
 - 小熊猫角色母版 v0.3：基础造型已获用户正向确认并接入应用，正在验证桌面尺寸和透明边缘。
-- 阶段 1B 素材准备：v0.4 “趴着待机”正式静态母版及 80/120/160/240/320 五档透明素材已完成；呼吸改用同一素材的程序化纵向起伏，后续只需制作偶尔眨眼和点击开心的透明帧素材。
-- `MD-004` 趴姿接入、程序化呼吸与动画状态基础：开发中；验收调整中新增 240/320 两档大尺寸，并补齐 App Icon 与 Asset Catalog 分类，默认仍为 120。
+- 阶段 1B 素材准备：v0.4 趴姿静态母版、半闭眼、全闭眼和开心趴姿三张动作母帧均已确认，并已生成各自 80/120/160/240/320 五档透明素材；呼吸和点击弹起继续采用程序化运动。素材准备已完成，尚未接入产品。
+- `MD-004` 趴姿接入、程序化呼吸与动画状态基础：开发、自动验证和人工验收均已完成；五档尺寸、App Icon 与 Asset Catalog 分类已就绪。
 - `MD-006` 本地偏好持久化基础：开发、自动验证和人工验收均已完成；五档尺寸可保存并在重启后恢复。
 - `MD-007` 英文与简体中文本地化基础：开发、自动验证、独立复核和用户检查均已完成；应用使用 String Catalog 并跟随 macOS 系统语言。
-- `MD-005` 眨眼与点击回应接入：任务书已更新，需要相关素材与 `MD-004` 就绪后安排。
+- `MD-005` 眨眼与点击回应接入：素材稳定和运行时资源/几何动画隔离均已完成自动验证，当前重新进入用户动态体验验收。
 
 ### 下一步可能做
 
@@ -55,8 +55,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-001 | 阶段 1A：最小桌面宠物 | 待验收 | [打开任务书](docs/tasks/active/MD-001-stage-1a-minimum-desktop-pet.md) |
 | MD-002 | 正式角色静态接入与桌面尺寸验证 | 待验收 | [打开任务书](docs/tasks/active/MD-002-static-character-integration.md) |
 | MD-003 | 隐藏与恢复菜单闭环 | 待验收 | [打开任务书](docs/tasks/active/MD-003-hide-show-menu-loop.md) |
-| MD-004 | 动画播放与状态基础 | 开发中 | [打开任务书](docs/tasks/active/MD-004-animation-playback-foundation.md) |
-| MD-005 | 趴姿待机与点击回应接入 | 待用户安排 | [打开任务书](docs/tasks/active/MD-005-prone-idle-and-click-response.md) |
+| MD-004 | 动画播放与状态基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-004-animation-playback-foundation.md) |
+| MD-005 | 趴姿待机与点击回应接入 | 待验收 | [打开任务书](docs/tasks/active/MD-005-prone-idle-and-click-response.md) |
 | MD-006 | 本地偏好持久化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-006-local-persistence-foundation.md) |
 | MD-007 | 英文与简体中文本地化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-007-localization-foundation.md) |
 
@@ -93,3 +93,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-004 第三次 GREEN 构建中测试直接比较 `UnitPoint.bottom` 但未导入定义模块 | 测试显式导入 `SwiftUI`；产品模块已在该次构建中通过编译 |
 | MD-004 资源像素测试读取资产目录 `NSImage.representations.first`，三档均失败；结果附件提取又因工具写入权限被沙箱拒绝 | 改为请求实际运行时 `CGImage` 并验证宽、高和 Alpha 信息，避免依赖资产代理 representation；源 PNG 已另由 `sips` 验证 |
 | MD-004 大尺寸复验时 `xcresulttool` 汇总尝试因 TestReport 写入权限失败 | 不依赖该附加汇总；以完整 `xcodebuild test` 的退出码 0、`TEST SUCCEEDED` 和逐项通过输出作为正式验证证据 |
+| MD-004 收口复核首次新鲜测试因当前终端缺少开发签名证书而在构建阶段取消 | 该次没有进入测试，不作为产品失败；改用 `CODE_SIGNING_ALLOWED=NO` 的本地无签名验证重新执行完整测试和干净 Debug 构建 |
+| MD-004 收口复核无签名整套 scheme 测试加载空 `MochiDockUITests` bundle 时找不到可执行文件 | `MochiDockTests` 在该次输出中逐项通过，但整体退出码 65，不视为完整成功；按项目既有正式口径指定 `-only-testing:MochiDockTests` 重跑全部有效单元测试，并另跑干净 Debug 构建 |
+| MD-005 首次 RED 在受限沙箱中被 Swift 宏插件服务的 malformed response 阻断 | 该次未编译到新增测试，不作为功能 RED；在非沙箱环境用同一无签名命令重跑，取得缺少新视觉映射与状态接口的预期失败证据 |
+| MD-005 第二轮 GREEN 初版尝试调用 `disableScreenUpdatesUntilFlush()` | 编译器确认该 API 自 macOS 15 起已弃用且无作用；立即移除，改为 `setFrame(display: false)`、禁用 SwiftUI/AppKit 动画、完成布局后单次 `displayIfNeeded()` 提交最终缓冲区 |
+| MD-005 快速尺寸面板测试的窗口动画断言失败 | `NSWindow.animationBehavior` 是可选属性，裸 `.none` 被解析为 `Optional.none` 而非动画枚举的 none；从 xcresult 确认实际值后改为显式 `NSWindow.AnimationBehavior.none`，撤销未经证实的套件串行化假设 |

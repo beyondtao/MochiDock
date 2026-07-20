@@ -19,12 +19,14 @@ final class PetInteractionModel {
     private(set) var mood: PetMood = .resting
     private(set) var displaySize: PetDisplaySize
     private(set) var animationState: PetAnimationState = .idle
+    private(set) var visualState: PetVisualState = .idle
 
     let timing: PetAnimationTiming
     private let scheduler: any PetAnimationScheduling
     private let preferences: any PetPreferencesStoring
     private var scheduledTask: (any PetAnimationScheduledTask)?
     private var isPlaybackActive = false
+    private var completedBreathingCycles = 0
 
     init() {
         self.scheduler = DispatchPetAnimationScheduler()
@@ -62,18 +64,35 @@ final class PetInteractionModel {
         self.displaySize = Self.restoredDisplaySize(from: preferences)
     }
 
-    var horizontalScale: CGFloat { 1 }
+    var horizontalScale: CGFloat {
+        animationState == .anticipatingResponse ? 1.02 : 1
+    }
     var verticalScale: CGFloat {
-        animationState == .breathingIn ? timing.breathingPeakScale : 1
+        switch animationState {
+        case .breathingIn: timing.breathingPeakScale
+        case .anticipatingResponse: 0.94
+        case .jumpingUp: 1.04
+        case .falling: 1.015
+        default: 1
+        }
     }
     var scaleAnchor: UnitPoint { .bottom }
-    var responseScale: CGFloat { animationState == .responding ? 1.03 : 1 }
-    var responseOffset: CGFloat { animationState == .responding ? -2 : 0 }
+    var responseOffset: CGFloat {
+        switch animationState {
+        case .jumpingUp: -displaySize.pointLength * 0.08
+        case .falling: -displaySize.pointLength * 0.02
+        default: 0
+        }
+    }
     var transitionDuration: TimeInterval {
         switch animationState {
         case .breathingIn: timing.breathingRise
         case .breathingOut: timing.breathingFall
-        case .responding: timing.responseDuration
+        case .blinkingHalfClosed, .blinkingClosed, .blinkingHalfOpen:
+            timing.blinkFrameDuration
+        case .anticipatingResponse: timing.responseAnticipation
+        case .jumpingUp: timing.responseRise
+        case .falling: timing.responseFall
         case .recovering: timing.recoveryDuration
         case .idle: 0
         }
@@ -82,29 +101,26 @@ final class PetInteractionModel {
     func startPlayback() {
         guard !isPlaybackActive else { return }
         isPlaybackActive = true
-        if mood == .happy {
-            animationState = .responding
-            schedule(after: timing.responseDuration) { model in
-                model.beginRecovery()
-            }
-            return
-        }
-        returnToIdleAndScheduleBreathing()
+        returnToIdleAndScheduleNextAction()
     }
 
     func stopPlayback() {
         isPlaybackActive = false
         cancelScheduledTransition()
         animationState = .idle
+        visualState = .idle
+        mood = .resting
+        completedBreathingCycles = 0
     }
 
     func handleClick() {
-        guard animationState != .responding, animationState != .recovering else { return }
+        guard !isResponseInProgress else { return }
         cancelScheduledTransition()
         mood = .happy
-        animationState = .responding
-        schedule(after: timing.responseDuration) { model in
-            model.beginRecovery()
+        visualState = .happy
+        animationState = .anticipatingResponse
+        schedule(after: timing.responseAnticipation) { model in
+            model.beginJump()
         }
     }
 
@@ -132,24 +148,68 @@ final class PetInteractionModel {
     private func endBreathingRise() {
         animationState = .breathingOut
         schedule(after: timing.breathingFall) { model in
-            model.returnToIdleAndScheduleBreathing()
+            model.completedBreathingCycles += 1
+            model.returnToIdleAndScheduleNextAction()
+        }
+    }
+
+    private func beginBlink() {
+        visualState = .halfBlink
+        animationState = .blinkingHalfClosed
+        schedule(after: timing.blinkFrameDuration) { model in
+            model.visualState = .fullBlink
+            model.animationState = .blinkingClosed
+            model.schedule(after: model.timing.blinkFrameDuration) { model in
+                model.visualState = .halfBlink
+                model.animationState = .blinkingHalfOpen
+                model.schedule(after: model.timing.blinkFrameDuration) { model in
+                    model.completedBreathingCycles = 0
+                    model.returnToIdleAndScheduleNextAction()
+                }
+            }
+        }
+    }
+
+    private func beginJump() {
+        animationState = .jumpingUp
+        schedule(after: timing.responseRise) { model in
+            model.beginFall()
+        }
+    }
+
+    private func beginFall() {
+        animationState = .falling
+        schedule(after: timing.responseFall) { model in
+            model.beginRecovery()
         }
     }
 
     private func beginRecovery() {
-        mood = .resting
         animationState = .recovering
         schedule(after: timing.recoveryDuration) { model in
-            model.returnToIdleAndScheduleBreathing()
+            model.completedBreathingCycles = 0
+            model.returnToIdleAndScheduleNextAction()
         }
     }
 
-    private func returnToIdleAndScheduleBreathing() {
+    private func returnToIdleAndScheduleNextAction() {
         mood = .resting
+        visualState = .idle
         animationState = .idle
         guard isPlaybackActive else { return }
         schedule(after: timing.idlePause) { model in
-            model.beginBreathing()
+            if model.completedBreathingCycles >= model.timing.breathingCyclesPerBlink {
+                model.beginBlink()
+            } else {
+                model.beginBreathing()
+            }
+        }
+    }
+
+    private var isResponseInProgress: Bool {
+        switch animationState {
+        case .anticipatingResponse, .jumpingUp, .falling, .recovering: true
+        default: false
         }
     }
 

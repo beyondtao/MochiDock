@@ -85,6 +85,32 @@ struct PetDisplaySizeTests {
         #expect(cgImage.alphaInfo != .noneSkipLast)
     }
 
+    @Test(arguments: PetDisplaySize.allCases)
+    func everyVisualStateMapsToAStableResourceForEverySize(size: PetDisplaySize) {
+        let suffix = Int(size.pointLength)
+
+        #expect(size.resourceName(for: .idle) == "RedPandaProneV04_\(suffix)")
+        #expect(size.resourceName(for: .halfBlink) == "RedPandaProneHalfBlinkV04_\(suffix)")
+        #expect(size.resourceName(for: .fullBlink) == "RedPandaProneFullBlinkV04_\(suffix)")
+        #expect(size.resourceName(for: .happy) == "RedPandaProneHappyV04_\(suffix)")
+    }
+
+    @Test(arguments: PetDisplaySize.allCases)
+    func everyRuntimeVisualResourceLoadsWithExpectedPixelsAndAlpha(size: PetDisplaySize) throws {
+        for visualState in PetVisualState.allCases {
+            let image = try #require(NSImage(named: size.resourceName(for: visualState)))
+            let cgImage = try #require(
+                image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            )
+
+            #expect(cgImage.width == Int(size.pointLength))
+            #expect(cgImage.height == Int(size.pointLength))
+            #expect(cgImage.alphaInfo != .none)
+            #expect(cgImage.alphaInfo != .noneSkipFirst)
+            #expect(cgImage.alphaInfo != .noneSkipLast)
+        }
+    }
+
     private func localized(_ resource: LocalizedStringResource) -> String {
         String(localized: resource)
     }

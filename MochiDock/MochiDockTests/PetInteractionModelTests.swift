@@ -32,7 +32,7 @@ struct PetInteractionModelTests {
         )
         model.handleClick()
 
-        scheduler.runNext()
+        for _ in 0..<4 { scheduler.runNext() }
 
         #expect(model.mood == .resting)
     }

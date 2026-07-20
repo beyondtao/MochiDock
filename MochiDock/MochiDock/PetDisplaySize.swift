@@ -11,13 +11,27 @@ enum PetDisplaySize: String, CaseIterable, Identifiable {
     var id: Self { self }
 
     var resourceName: String {
-        switch self {
-        case .small: "RedPandaProneV04_80"
-        case .medium: "RedPandaProneV04_120"
-        case .large: "RedPandaProneV04_160"
-        case .extraLarge: "RedPandaProneV04_240"
-        case .jumbo: "RedPandaProneV04_320"
+        resourceName(for: .idle)
+    }
+
+    func resourceName(for visualState: PetVisualState) -> String {
+        let prefix: String
+        switch visualState {
+        case .idle: prefix = "RedPandaProneV04"
+        case .halfBlink: prefix = "RedPandaProneHalfBlinkV04"
+        case .fullBlink: prefix = "RedPandaProneFullBlinkV04"
+        case .happy: prefix = "RedPandaProneHappyV04"
         }
+
+        let pixels: Int
+        switch self {
+        case .small: pixels = 80
+        case .medium: pixels = 120
+        case .large: pixels = 160
+        case .extraLarge: pixels = 240
+        case .jumbo: pixels = 320
+        }
+        return "\(prefix)_\(pixels)"
     }
 
     var pointLength: CGFloat {

@@ -4,24 +4,32 @@ struct PetView: View {
     let model: PetInteractionModel
 
     var body: some View {
-        Image(model.displaySize.resourceName)
+        Image(model.displaySize.resourceName(for: model.visualState))
             .resizable()
             .scaledToFit()
+            .transaction { transaction in
+                PetRenderPolicy.disableDiscreteContentAnimation(&transaction)
+            }
             .scaleEffect(
-                x: model.horizontalScale * model.responseScale,
-                y: model.verticalScale * model.responseScale,
+                x: model.horizontalScale,
+                y: model.verticalScale,
                 anchor: model.scaleAnchor
             )
             .offset(y: model.responseOffset)
-            .brightness(model.mood == .happy ? 0.025 : 0)
             .animation(
-                .easeInOut(duration: model.transitionDuration),
+                PetRenderPolicy.geometryAnimation(
+                    for: model.animationState,
+                    timing: model.timing
+                )?.animation,
                 value: model.animationState
             )
             .frame(
                 width: model.displaySize.pointLength,
                 height: model.displaySize.pointLength
             )
+            .transaction(value: model.displaySize) { transaction in
+                PetRenderPolicy.disableDiscreteContentAnimation(&transaction)
+            }
             .contentShape(Rectangle())
             .onTapGesture {
                 model.handleClick()
