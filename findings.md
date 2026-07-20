@@ -233,4 +233,5 @@
 - 用户截图中的 `swift_willThrow` 是启用 Swift Error Breakpoint 后的调试暂停，不是当前 MD-009 崩溃证据：截图后无新 MochiDock 崩溃报告，干净 Debug 通过正常 LaunchServices 路径启动后进程持续存活；产品源码没有显式 `throw`、`try!`、`fatalError` 或断言终止路径，JSON Codable 只使用 `try?`。
 - 2026-07-20 15:49 与 20:44 的既有 `.ips` 均为 AppKit `_RegisterApplication` 阶段 `SIGABRT`，发生在产品逻辑之前，与先前直接/探针式启动环境一致，不指向 MD-009 位置代码。
 - 用户已确认正常桌面使用中的位置保存没有问题并授权提交当前实现。该确认覆盖主流程人工体验，但不改变独立复审结论：无屏幕信息的 pending 恢复期间切换尺寸仍需按旧 frame 中心重建；提交记录必须把它保留为已知边界，不能宣称任务书全部条件已满足。
+- 用户随后完成更完整检查并明确决定 MD-009 暂时没有问题、可以验收。该产品决定使 MD-009 以当前实现收口；pending/尺寸中心点差异不再作为本任务阻塞项，但仍保留为已接受的低概率边界，不能描述为技术上已修复。
 - 用户随后在 Xcode 中继续执行，MochiDock 正常运行，确认本次 `swift_willThrow` 确为 Swift Error Breakpoint 暂停而非产品崩溃。
