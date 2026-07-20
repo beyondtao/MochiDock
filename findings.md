@@ -135,3 +135,18 @@
 - 用户在 16 英寸 MBP 上体验后认为 160 仍偏小，确认在 MD-004 内新增 240/320 两档；默认 120 不变，动画、面板与菜单机制不变。
 - 用户要求为应用补齐 1024×1024 App Icon，并将 Asset Catalog 从平铺列表改为可扩展分类。图标采用与 v0.4 一致的趴姿小熊猫头像、暖奶油背景；最终源图为 1024×1024 不透明 PNG，无文字、无额外物件。
 - Asset Catalog 分类确认为 `System/{AppIcon, AccentColor}` 与 `Characters/RedPanda/Prone/v0.4/{80,120,160,240,320}`；目录不启用 namespace，因此保持现有运行时资源名。
+
+## 本地持久化已确认决策
+
+- 用户确认采用分层存储：UserDefaults 保存显示尺寸、音效和动画等轻量偏好；SwiftData 保存未来成长值、等级、已拥有服饰、穿戴关系和互动统计等领域数据。
+- 角色、服饰与动画图片不存入数据库，继续使用 Asset Catalog 或后续资源包；数据库只保存稳定资源标识。
+- 第一个可验证步骤只保存并恢复尺寸，为未来偏好扩展建立可测试边界；在成长或服饰真实字段确认前，不为空模型提前创建 SwiftData 实体。
+- 该决策形成 `MD-006`，建议在 `MD-005` 前实施；任务当前为“待用户安排”，未自动启动开发。
+
+## MD-006 工程实现结论
+
+- 尺寸偏好通过 `PetPreferencesStoring` 注入边界保存，生产实现封装 `UserDefaults.standard`，测试全部使用每例独立内存存储或唯一 suite，不依赖开发机真实偏好。
+- 稳定迁移契约为键 `pet.displaySize` 与 `PetDisplaySize.rawValue`（`small`、`medium`、`large`、`extraLarge`、`jumbo`）；缺失、空值、point 数字、展示文案或旧标识均回退到 120。
+- 恢复在 `PetInteractionModel` 同步初始化中完成；AppDelegate 先创建模型，再把同一模型交给面板，因此首个 frame、`PetView` 资源和 Picker selection 不存在第二份尺寸状态。
+- 实际生产偏好设为 `jumbo` 后，两次启动干净构建产物均直接显示 320 尺寸角色；Computer Use 无法打开 MenuBarExtra Picker，菜单勾选和启动瞬间无跳变仍需人工目视验收。
+- 独立代码审查未发现 Critical 或产品实现缺陷；指出的菜单选择源与 UserDefaults 适配器测试缺口已补齐。

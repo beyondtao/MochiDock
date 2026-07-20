@@ -4,13 +4,19 @@ import Testing
 @MainActor
 struct PetInteractionModelTests {
     @Test func startsResting() {
-        let model = PetInteractionModel(scheduler: TestPetAnimationScheduler())
+        let model = PetInteractionModel(
+            scheduler: TestPetAnimationScheduler(),
+            preferences: InMemoryPetPreferences()
+        )
 
         #expect(model.mood == .resting)
     }
 
     @Test func clickChangesRestingToHappy() {
-        let model = PetInteractionModel(scheduler: TestPetAnimationScheduler())
+        let model = PetInteractionModel(
+            scheduler: TestPetAnimationScheduler(),
+            preferences: InMemoryPetPreferences()
+        )
 
         model.handleClick()
 
@@ -19,7 +25,10 @@ struct PetInteractionModelTests {
 
     @Test func clickRecoversHappyToRestingAfterScheduledResponse() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
         model.handleClick()
 
         scheduler.runNext()

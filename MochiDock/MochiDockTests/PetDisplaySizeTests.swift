@@ -5,7 +5,7 @@ import Testing
 @MainActor
 struct PetDisplaySizeTests {
     @Test func mediumIsTheDefaultSize() {
-        let model = PetInteractionModel()
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
 
         #expect(model.displaySize == .medium)
     }
@@ -28,7 +28,7 @@ struct PetDisplaySizeTests {
 
     @Test(arguments: PetDisplaySize.allCases)
     func selectingEachSizeUpdatesState(size: PetDisplaySize) {
-        let model = PetInteractionModel()
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
 
         model.selectDisplaySize(size)
 
@@ -36,7 +36,7 @@ struct PetDisplaySizeTests {
     }
 
     @Test func selectingSizeDoesNotResetMood() {
-        let model = PetInteractionModel()
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         model.handleClick()
 
         model.selectDisplaySize(.large)

@@ -10,32 +10,49 @@ enum PetMood: Equatable {
 @Observable
 final class PetInteractionModel {
     private(set) var mood: PetMood = .resting
-    private(set) var displaySize: PetDisplaySize = .medium
+    private(set) var displaySize: PetDisplaySize
     private(set) var animationState: PetAnimationState = .idle
 
     let timing: PetAnimationTiming
     private let scheduler: any PetAnimationScheduling
+    private let preferences: any PetPreferencesStoring
     private var scheduledTask: (any PetAnimationScheduledTask)?
     private var isPlaybackActive = false
 
     init() {
         self.scheduler = DispatchPetAnimationScheduler()
         self.timing = .standard
+        let preferences = UserDefaultsPetPreferences()
+        self.preferences = preferences
+        self.displaySize = Self.restoredDisplaySize(from: preferences)
     }
 
-    init(
-        scheduler: any PetAnimationScheduling
-    ) {
-        self.scheduler = scheduler
+    init(preferences: any PetPreferencesStoring) {
+        self.scheduler = DispatchPetAnimationScheduler()
         self.timing = .standard
+        self.preferences = preferences
+        self.displaySize = Self.restoredDisplaySize(from: preferences)
     }
 
     init(
         scheduler: any PetAnimationScheduling,
-        timing: PetAnimationTiming
+        preferences: any PetPreferencesStoring
+    ) {
+        self.scheduler = scheduler
+        self.timing = .standard
+        self.preferences = preferences
+        self.displaySize = Self.restoredDisplaySize(from: preferences)
+    }
+
+    init(
+        scheduler: any PetAnimationScheduling,
+        timing: PetAnimationTiming,
+        preferences: any PetPreferencesStoring
     ) {
         self.scheduler = scheduler
         self.timing = timing
+        self.preferences = preferences
+        self.displaySize = Self.restoredDisplaySize(from: preferences)
     }
 
     var horizontalScale: CGFloat { 1 }
@@ -86,6 +103,16 @@ final class PetInteractionModel {
 
     func selectDisplaySize(_ size: PetDisplaySize) {
         displaySize = size
+        preferences.set(size.rawValue, forKey: PetPreferenceKey.displaySize)
+    }
+
+    private static func restoredDisplaySize(
+        from preferences: any PetPreferencesStoring
+    ) -> PetDisplaySize {
+        guard let storedValue = preferences.string(forKey: PetPreferenceKey.displaySize) else {
+            return .medium
+        }
+        return PetDisplaySize(rawValue: storedValue) ?? .medium
     }
 
     private func beginBreathing() {

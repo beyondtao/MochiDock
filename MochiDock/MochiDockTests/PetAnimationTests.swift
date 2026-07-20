@@ -7,7 +7,7 @@ import Testing
 struct PetAnimationTests {
     @Test func breathingMovesToPeakThenReturnsToIdleBeforeWaiting() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
 
         model.startPlayback()
         #expect(model.animationState == .idle)
@@ -30,7 +30,10 @@ struct PetAnimationTests {
     }
 
     @Test func presentationKeepsHorizontalScaleAndBottomAnchorStable() {
-        let model = PetInteractionModel(scheduler: TestPetAnimationScheduler())
+        let model = PetInteractionModel(
+            scheduler: TestPetAnimationScheduler(),
+            preferences: InMemoryPetPreferences()
+        )
 
         #expect(model.horizontalScale == 1)
         #expect(model.scaleAnchor == .bottom)
@@ -38,7 +41,7 @@ struct PetAnimationTests {
 
     @Test func repeatedStartAndSizeChangesKeepOneScheduledTransition() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
 
         model.startPlayback()
         model.startPlayback()
@@ -51,7 +54,7 @@ struct PetAnimationTests {
 
     @Test func stopCancelsPlaybackAndRestartCreatesOnlyOneTransition() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
         model.startPlayback()
 
         model.stopPlayback()
@@ -66,7 +69,7 @@ struct PetAnimationTests {
 
     @Test func rapidClicksDoNotQueueResponsesAndRecoverToIdle() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
         model.startPlayback()
 
         for _ in 0..<20 { model.handleClick() }

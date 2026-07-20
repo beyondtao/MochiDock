@@ -4,9 +4,46 @@ import Testing
 
 @MainActor
 struct PetPanelControllerTests {
+    @Test func restoredSizeDefinesTheFirstPanelFrameAndMenuSelectionSource() {
+        let store = InMemoryPetPreferences(
+            values: [PetPreferenceKey.displaySize: PetDisplaySize.jumbo.rawValue]
+        )
+        let model = PetInteractionModel(preferences: store)
+        let controller = PetPanelController(model: model)
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+
+        #expect(model.displaySize == .jumbo)
+        #expect(model.displaySize.resourceName == "RedPandaProneV04_320")
+        #expect(controller.panel?.frame.size == NSSize(width: 320, height: 320))
+    }
+
+    @Test func restoredSizeAndRepeatedVisibilityChangesKeepOnePlaybackSchedule() {
+        let store = InMemoryPetPreferences(
+            values: [PetPreferenceKey.displaySize: PetDisplaySize.extraLarge.rawValue]
+        )
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(scheduler: scheduler, preferences: store)
+        let controller = PetPanelController(model: model)
+
+        controller.showPet()
+        defer { controller.panel?.close() }
+        controller.selectDisplaySize(.extraLarge)
+        controller.hidePet()
+        controller.hidePet()
+        controller.showPet()
+        controller.showPet()
+        controller.selectDisplaySize(.small)
+
+        #expect(model.displaySize == .small)
+        #expect(store.values[PetPreferenceKey.displaySize] == PetDisplaySize.small.rawValue)
+        #expect(scheduler.pendingCount == 1)
+    }
+
     @Test func repeatedShowAndSizeChangesKeepOnePlaybackSchedule() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
 
         controller.showPet()
@@ -21,7 +58,7 @@ struct PetPanelControllerTests {
 
     @Test func hideStopsPlaybackAndShowRestartsOneSchedule() {
         let scheduler = TestPetAnimationScheduler()
-        let model = PetInteractionModel(scheduler: scheduler)
+        let model = PetInteractionModel(scheduler: scheduler, preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
         controller.showPet()
         defer { controller.panel?.close() }
@@ -35,7 +72,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func showPetConfiguresTransparentMovablePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
 
         controller.showPet()
         defer { controller.panel?.close() }
@@ -53,7 +92,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func repeatedShowReusesTheSamePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let firstPanel = controller.panel
@@ -64,7 +105,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func showAfterCloseRestoresTheSamePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let firstPanel = controller.panel
@@ -84,7 +127,9 @@ struct PetPanelControllerTests {
         (PetDisplaySize.jumbo, CGFloat(320)),
     ])
     func selectingSizeUpdatesPanelDimensions(size: PetDisplaySize, pointLength: CGFloat) {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
 
@@ -94,7 +139,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func selectingSizeKeepsPanelIdentityAndCenter() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -108,7 +155,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func repeatedSizeSelectionDoesNotCreateAnotherPanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -120,7 +169,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func hideMakesTheExistingPanelInvisibleWithoutReleasingIt() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -132,7 +183,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func showAfterHideRestoresTheSamePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -145,7 +198,7 @@ struct PetPanelControllerTests {
     }
 
     @Test func hideAndShowPreserveSizeAndMood() {
-        let model = PetInteractionModel()
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
         controller.showPet()
         defer { controller.panel?.close() }
@@ -161,7 +214,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func repeatedHideAndShowReusesOnePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -176,7 +231,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func visibilityTracksTheActualPanelState() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
 
@@ -190,7 +247,9 @@ struct PetPanelControllerTests {
     }
 
     @Test func toggleHidesThenRestoresTheSamePanel() {
-        let controller = PetPanelController(model: PetInteractionModel())
+        let controller = PetPanelController(
+            model: PetInteractionModel(preferences: InMemoryPetPreferences())
+        )
         controller.showPet()
         defer { controller.panel?.close() }
         let originalPanel = controller.panel
@@ -204,7 +263,7 @@ struct PetPanelControllerTests {
     }
 
     @Test func togglePreservesSizeAndMood() {
-        let model = PetInteractionModel()
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
         let controller = PetPanelController(model: model)
         controller.showPet()
         defer { controller.panel?.close() }
