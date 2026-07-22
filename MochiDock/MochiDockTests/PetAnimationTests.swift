@@ -220,6 +220,41 @@ struct PetAnimationTests {
         #expect(model.visualState == .happy)
         #expect(scheduler.pendingCount == 1)
     }
+
+    @Test func disabledProximityDoesNotStartAttention() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences(values: [
+                PetPreferenceKey.proximityResponseEnabled: "false"
+            ])
+        )
+        model.startPlayback()
+
+        #expect(!model.handleProximityEntry())
+        #expect(model.visualState == .idle)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func disablingDuringAttentionCancelsItAndRestoresIdlePlayback() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        model.startPlayback()
+        #expect(model.handleProximityEntry())
+        #expect(model.visualState == .attentionTail)
+
+        model.setProximityResponseEnabled(false)
+
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(model.mood == .resting)
+        #expect(scheduler.pendingCount == 1)
+        scheduler.runNext()
+        #expect(model.animationState == .breathingIn)
+    }
 }
 
 @MainActor

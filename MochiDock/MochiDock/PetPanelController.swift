@@ -63,7 +63,9 @@ final class PetPanelController {
         let panel = panel ?? makePanel()
         panel.orderFrontRegardless()
         model.startPlayback()
-        proximityDetector.start()
+        if model.isProximityResponseEnabled {
+            proximityDetector.start()
+        }
     }
 
     func hidePet() {
@@ -77,6 +79,16 @@ final class PetPanelController {
             hidePet()
         } else {
             showPet()
+        }
+    }
+
+    func setProximityResponseEnabled(_ enabled: Bool) {
+        guard model.isProximityResponseEnabled != enabled else { return }
+        model.setProximityResponseEnabled(enabled)
+        if enabled, isPetVisible {
+            proximityDetector.start()
+        } else if !enabled {
+            proximityDetector.stop()
         }
     }
 

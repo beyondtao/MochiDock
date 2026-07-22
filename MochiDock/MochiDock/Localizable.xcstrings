@@ -1,6 +1,111 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld" : {
+
+    },
+    "A quiet little friend on your desktop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A quiet little friend on your desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安静陪伴在桌面上的小伙伴"
+          }
+        }
+      }
+    },
+    "Adjust how your little friend looks and responds." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust how your little friend looks and responds."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整小伙伴的外观与互动方式。"
+          }
+        }
+      }
+    },
+    "Allow MochiDock in System Settings > General > Login Items." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow MochiDock in System Settings > General > Login Items."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在“系统设置 > 通用 > 登录项”中允许 MochiDock。"
+          }
+        }
+      }
+    },
+    "Application" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用"
+          }
+        }
+      }
+    },
+    "Choose how MochiDock behaves on your Mac." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how MochiDock behaves on your Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 MochiDock 在 Mac 上的运行方式。"
+          }
+        }
+      }
+    },
+    "Couldn’t update Start at Login." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t update Start at Login."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法更新“登录时启动”。"
+          }
+        }
+      }
+    },
     "Extra Large — 240" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -123,6 +228,57 @@
         }
       }
     },
+    "MochiDock Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MochiDock Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MochiDock 设置"
+          }
+        }
+      }
+    },
+    "MochiDock’s login item is unavailable." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MochiDock’s login item is unavailable."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MochiDock 的登录项当前不可用。"
+          }
+        }
+      }
+    },
+    "Pet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宠物"
+          }
+        }
+      }
+    },
     "Pet Size" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -136,6 +292,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宠物尺寸"
+          }
+        }
+      }
+    },
+    "Pointer Proximity Response" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pointer Proximity Response"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鼠标接近回应"
           }
         }
       }
@@ -174,6 +347,23 @@
         }
       }
     },
+    "Settings…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置…"
+          }
+        }
+      }
+    },
     "Show Pet" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -204,6 +394,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小 — 80"
+          }
+        }
+      }
+    },
+    "Start at Login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start at Login"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录时启动"
+          }
+        }
+      }
+    },
+    "When the pointer comes close, your little friend will notice you." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the pointer comes close, your little friend will notice you."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鼠标靠近时，小伙伴会注意到你。"
           }
         }
       }

@@ -30,11 +30,13 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 
 ### 当前正在做
 
-- 当前没有开发中的编号任务。MD-009 已由用户完成实际体验检查并验收归档。
+- MD-010 已通过启动前文档复核并由用户正式安排，当前状态为“开发中”。
+- MD-011 的滑块交互、焦点表现、当前桌面空间和主线程隔离修订已通过独立技术复核，当前状态为“待验收”；最终人工体验、验收和归档仍由用户决定。
 
 ### 下一步可能做
 
-- 后续候选为低打扰控制、启动与日常可达性、阶段 2 收口试用；不预先分配任务编号。
+- 用户已确认希望增加独立设置窗口，避免状态栏菜单随偏好增加而持续膨胀。建议在 MD-010 验收后形成下一项独立任务：状态栏菜单只保留隐藏/显示、设置和退出，宠物尺寸、鼠标接近回应、登录时启动移入设置窗口。
+- 设置窗口完成后，再长期使用当前版本并进行阶段 2 稳定试用与收口；不自动扩展更多设置或新功能。
 - 详细提案见 [阶段 2 开发计划](docs/stage-2-development-plan.md)。
 
 ### 想法池，暂不承诺
@@ -55,6 +57,8 @@ MochiDock 首先是一款自然、有趣、低打扰的 macOS 桌面宠物；后
 | MD-007 | 英文与简体中文本地化基础 | 已完成 | [打开任务书](docs/tasks/completed/MD-007-localization-foundation.md) |
 | MD-008 | 有限鼠标接近回应 | 已完成 | [打开任务书](docs/tasks/completed/MD-008-limited-pointer-proximity-response.md) |
 | MD-009 | 宠物位置保存与安全恢复 | 已完成 | [打开任务书](docs/tasks/completed/MD-009-pet-position-persistence-and-safe-restoration.md) |
+| MD-010 | 低打扰控制与登录时启动 | 开发中 | [打开任务书](docs/tasks/active/MD-010-low-interruption-and-login-start.md) |
+| MD-011 | 独立设置窗口 | 待验收 | [打开任务书](docs/tasks/active/MD-011-settings-window.md) |
 
 任务状态统一使用：`草拟中`、`待用户安排`、`开发中`、`待验收`、`已完成`、`已取消`、`已阻塞`。
 

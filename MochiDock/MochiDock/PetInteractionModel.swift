@@ -18,6 +18,7 @@ enum PetMood: Equatable {
 final class PetInteractionModel {
     private(set) var mood: PetMood = .resting
     private(set) var displaySize: PetDisplaySize
+    private(set) var isProximityResponseEnabled: Bool
     private(set) var animationState: PetAnimationState = .idle
     private(set) var visualState: PetVisualState = .idle
 
@@ -36,6 +37,7 @@ final class PetInteractionModel {
         let preferences = UserDefaultsPetPreferences()
         self.preferences = preferences
         self.displaySize = Self.restoredDisplaySize(from: preferences)
+        self.isProximityResponseEnabled = Self.restoredProximityResponseEnabled(from: preferences)
     }
 
     init(preferences: any PetPreferencesStoring) {
@@ -43,6 +45,7 @@ final class PetInteractionModel {
         self.timing = .standard
         self.preferences = preferences
         self.displaySize = Self.restoredDisplaySize(from: preferences)
+        self.isProximityResponseEnabled = Self.restoredProximityResponseEnabled(from: preferences)
     }
 
     init(
@@ -53,6 +56,7 @@ final class PetInteractionModel {
         self.timing = .standard
         self.preferences = preferences
         self.displaySize = Self.restoredDisplaySize(from: preferences)
+        self.isProximityResponseEnabled = Self.restoredProximityResponseEnabled(from: preferences)
     }
 
     init(
@@ -64,6 +68,7 @@ final class PetInteractionModel {
         self.timing = timing
         self.preferences = preferences
         self.displaySize = Self.restoredDisplaySize(from: preferences)
+        self.isProximityResponseEnabled = Self.restoredProximityResponseEnabled(from: preferences)
     }
 
     var horizontalScale: CGFloat {
@@ -133,7 +138,10 @@ final class PetInteractionModel {
 
     @discardableResult
     func handleProximityEntry() -> Bool {
-        guard isPlaybackActive, !isResponseInProgress, !isAttentionInProgress else {
+        guard isProximityResponseEnabled,
+              isPlaybackActive,
+              !isResponseInProgress,
+              !isAttentionInProgress else {
             return false
         }
         cancelScheduledTransition()
@@ -156,6 +164,17 @@ final class PetInteractionModel {
         preferences.set(size.rawValue, forKey: PetPreferenceKey.displaySize)
     }
 
+    func setProximityResponseEnabled(_ enabled: Bool) {
+        let changed = isProximityResponseEnabled != enabled
+        isProximityResponseEnabled = enabled
+        preferences.set(String(enabled), forKey: PetPreferenceKey.proximityResponseEnabled)
+        guard changed else { return }
+        guard !enabled, isAttentionInProgress else { return }
+        cancelScheduledTransition()
+        completedBreathingCycles = 0
+        returnToIdleAndScheduleNextAction()
+    }
+
     private static func restoredDisplaySize(
         from preferences: any PetPreferencesStoring
     ) -> PetDisplaySize {
@@ -163,6 +182,21 @@ final class PetInteractionModel {
             return .medium
         }
         return PetDisplaySize(rawValue: storedValue) ?? .medium
+    }
+
+    private static func restoredProximityResponseEnabled(
+        from preferences: any PetPreferencesStoring
+    ) -> Bool {
+        guard let storedValue = preferences.string(
+            forKey: PetPreferenceKey.proximityResponseEnabled
+        ) else {
+            return true
+        }
+        switch storedValue {
+        case "true": return true
+        case "false": return false
+        default: return true
+        }
     }
 
     private func beginBreathing() {

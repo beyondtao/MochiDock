@@ -93,6 +93,32 @@ struct PetPreferencesTests {
     @Test func positionPreferenceUsesAStableCentralizedKey() {
         #expect(PetPreferenceKey.windowPosition == "pet.windowPosition")
     }
+
+    @Test func missingProximityPreferenceDefaultsToEnabled() {
+        let model = PetInteractionModel(preferences: InMemoryPetPreferences())
+
+        #expect(model.isProximityResponseEnabled)
+    }
+
+    @Test(arguments: [true, false])
+    func proximityPreferencePersistsAndRestoresInANewModel(enabled: Bool) {
+        let store = InMemoryPetPreferences()
+        let firstModel = PetInteractionModel(preferences: store)
+
+        firstModel.setProximityResponseEnabled(enabled)
+        let restoredModel = PetInteractionModel(preferences: store)
+
+        #expect(restoredModel.isProximityResponseEnabled == enabled)
+        #expect(store.values[PetPreferenceKey.proximityResponseEnabled] == String(enabled))
+    }
+
+    @Test func invalidProximityPreferenceDefaultsToEnabled() {
+        let store = InMemoryPetPreferences(values: [
+            PetPreferenceKey.proximityResponseEnabled: "not-a-boolean"
+        ])
+
+        #expect(PetInteractionModel(preferences: store).isProximityResponseEnabled)
+    }
 }
 
 final class InMemoryPetPreferences: PetPreferencesStoring {

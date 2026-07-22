@@ -25,6 +25,7 @@ final class UserDefaultsPetPreferences: PetPreferencesStoring {
 enum PetPreferenceKey {
     static let displaySize = "pet.displaySize"
     static let windowPosition = "pet.windowPosition"
+    static let proximityResponseEnabled = "pet.proximityResponseEnabled"
 }
 
 struct PetWindowPosition: Equatable {
