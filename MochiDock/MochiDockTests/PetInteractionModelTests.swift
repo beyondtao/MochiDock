@@ -42,6 +42,77 @@ struct PetInteractionModelTests {
         #expect(localized(PetMood.happy.accessibilityValue) == localizedKey("Happy"))
     }
 
+    @Test func enteringEdgePeekCancelsOrdinaryPlaybackAndHoldsAttentionBaseWithoutALoop() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        model.startPlayback()
+        #expect(scheduler.pendingCount == 1)
+
+        model.enterEdgePeekVisual()
+
+        #expect(model.visualState == .attentionBase)
+        #expect(model.animationState == .attentionBase)
+        #expect(model.mood == .resting)
+        #expect(scheduler.pendingCount == 0)
+        #expect(scheduler.totalScheduled == 1)
+    }
+
+    @Test func leavingEdgePeekResumesOneOrdinaryIdleScheduleAndIsIdempotent() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        model.startPlayback()
+        model.enterEdgePeekVisual()
+
+        model.leaveEdgePeekVisual()
+        model.leaveEdgePeekVisual()
+
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(scheduler.pendingCount == 1)
+        #expect(scheduler.totalScheduled == 2)
+    }
+
+    @Test func clickAfterLeavingEdgePeekUsesTheExistingHappyResponse() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        model.startPlayback()
+        model.enterEdgePeekVisual()
+        model.leaveEdgePeekVisual()
+
+        model.handleClick()
+
+        #expect(model.mood == .happy)
+        #expect(model.visualState == .happy)
+        #expect(model.animationState == .anticipatingResponse)
+        #expect(scheduler.pendingCount == 1)
+    }
+
+    @Test func stoppingPlaybackClearsAnActiveEdgePeekVisual() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        model.startPlayback()
+        model.enterEdgePeekVisual()
+
+        model.stopPlayback()
+
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(model.mood == .resting)
+        #expect(scheduler.pendingCount == 0)
+    }
+
     private func localized(_ resource: LocalizedStringResource) -> String {
         String(localized: resource)
     }

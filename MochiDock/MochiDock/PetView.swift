@@ -2,6 +2,17 @@ import SwiftUI
 
 struct PetView: View {
     let model: PetInteractionModel
+    let onClick: () -> Void
+
+    init(model: PetInteractionModel, onClick: @escaping () -> Void) {
+        self.model = model
+        self.onClick = onClick
+    }
+
+    init(model: PetInteractionModel) {
+        self.model = model
+        self.onClick = { model.handleClick() }
+    }
 
     var body: some View {
         Image(model.displaySize.resourceName(for: model.visualState))
@@ -32,7 +43,7 @@ struct PetView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                model.handleClick()
+                onClick()
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("MochiDock pet")

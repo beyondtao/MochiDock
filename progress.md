@@ -545,3 +545,162 @@
 - 高级项目经理结合用户体验结论、固定基线和新鲜自动验证，建议接受阶段性收口；明确保留“实际观察期短于计划 5～7 天”的证据限制。
 - 用户的收口决定使 MD-012 更新为“已完成”并归档，阶段 2 同步标记为“已完成”。
 - 当前没有已安排的下一项开发任务。屏幕边缘躲藏与偷看、小型工具和 AI 仍为未承诺方向，不自动建立 MD-013。
+
+### MD-013 方向确认与待安排
+
+- 用户于 2026-07-22 明确选择“屏幕边缘躲藏与偷看”；该方向获得产品确认，正式建立 MD-013。
+- 完成只读工程核对：现有单一面板、完整可见位置持久化、屏幕安全校正、指针接近采样和可取消动画调度可承接最小实验，不需要新增权限、网络、数据库、依赖或素材。
+- MD-013 首轮限定为用户拖到左右外边缘后才自动缩进；中央自主移动、上下边缘、相邻显示器接缝、多屏穿越、设置和随机行为明确排除。
+- 已建立任务书 `docs/tasks/active/MD-013-edge-hide-and-peek.md` 和测试先行实施计划 `docs/superpowers/plans/2026-07-22-md-013-edge-hide-and-peek.md`，任务状态为“待用户安排”。
+- 用户纠正协作方式：高级项目经理只提供开发 Prompt，不替用户启动 Codex 开发任务；用户将亲自发送 Prompt，以便查看并控制每一步。
+- 本轮只修改项目管理和实施计划文档，没有修改产品 Swift、测试、素材、工程配置或现有持久化数据；下一步等待用户把开发 Prompt 交给 Codex 开发团队。
+
+### MD-013 首轮交付独立复核
+
+- 开发团队完成代码与自动验证交付；任务保持“开发中”，未提交、推送、归档或标记完成。
+- 高级项目经理新鲜复跑全部有效 `MochiDockTests`，145/145 通过；MD-005/MD-008 素材稳定测试 11/11 通过；全新 `/private/tmp/md013-review-build-019f897e` 无签名 clean Debug build 成功；`git diff --check` 通过。
+- 独立代码复核发现三个 Important：真实 `mouseDown → tap` 顺序会使露头点击只回位而丢失开心回应；`.returning` 无法被 Hide、尺寸/屏幕变化或再次拖动安全取消；等待/偷看时关闭装饰性接近回应会错误关闭安全靠近唤回。
+- 审查提出的“拖动后指针原地停留不会取消等待”不构成当前任务书偏差：没有新的有效靠近转换，且任务目标本身要求拖到边缘后等待缩进。该体感留到真实体验判断。
+- MD-013 暂不进入人工验收，继续保持“开发中”。下一步由用户把修订 Prompt 交给 Codex 开发团队；修正后需补确定性回归并重新完整交付。
+
+### MD-013 第二轮交付独立复核
+
+- 开发团队修订首轮三个 Important 后再次交付；高级项目经理新鲜复跑 155/155 全部有效测试、11/11 素材稳定测试、全新 `/private/tmp/md013-rereview-build-019f897e` 无签名 clean Debug build 和 `git diff --check`，结果均通过。
+- 独立复核确认真实点击的单次开心回应与关闭装饰性接近后的安全唤回已经关闭；Hide、尺寸和屏幕变化中断返回也已由世代失效和 animator 取消保护。
+- 仍有一个 Important：从 `.peeking` 直接按住拖动时会先启动异步回位动画，可能与用户拖动竞争。现有再次拖动测试从 `.returning` 开始，未覆盖直接露头拖动。
+- MD-013 继续保持“开发中”，暂不进入人工验收；下一步由用户发送聚焦修订 Prompt，补直接 `.peeking → mouseDown → drag → mouseUp` 的确定性 RED/GREEN 后重新交付。
+
+### MD-013 开发启动
+
+- 用户于 2026-07-22 正式安排 MD-013；任务状态由“待用户安排”更新为“开发中”，不启动后续任务。
+- 开发前只读核对确认：`main` 比 `origin/main` 超前 1 个已有文档提交；三份根目录项目记录已有未提交变更，MD-013 任务书与实施计划为未跟踪文件；本任务保留并只做必要增量更新。
+- 现有产品没有未提交差异；单一 `NSPanel`、单一 `PetInteractionModel`、可取消调度、完整可见位置持久化与指针采样边界均与任务计划一致；无需新权限、依赖、素材或持久化键。
+- 启动基线验证：无签名、串行的全部有效 `MochiDockTests` 共 122 项通过，输出 `TEST SUCCEEDED`。
+- 已确认两个集成风险：偷看期间的安全靠近唤回必须不受装饰性接近开关影响，但完整可见时仍尊重 MD-010 的停止采样语义；尺寸或屏幕变化必须先退出临时越界，再进入既有完整可见安全校正。两项均可在现有范围内解决，不构成阻塞。
+
+### MD-013 阶段 1：纯边缘几何
+
+- RED：新增独立 `PetEdgePlacementTests` 后，聚焦构建因缺少 `PetEdgePlacement` 和 `PetScreenEdge` 失败，退出原因与预期缺失能力一致。
+- 最小实现：新增纯计算策略，集中定义 24 pt 触发带、`max(显示尺寸 × 0.35, 32 pt)` 露出宽度，只接受完整包含的 frame，并按面板垂直跨度排除相邻显示器内部接缝。
+- GREEN：聚焦几何套件通过；左右外边缘、中央/上下拒绝、内部接缝、负坐标显示器、五档露出宽度和精确恢复原完整 frame 均通过；复跑无新增产品源码警告。
+- 本阶段未读取 `NSScreen`、未移动面板、未写入偏好，与任务书无偏差。
+
+### MD-013 阶段 2：可取消边缘状态协调
+
+- RED：独立协调器测试首次还暴露测试文件缺少 `Foundation` 导入；先修正该装配问题后复跑，失败只剩 `PetEdgeBehaviorCoordinator` 及阶段类型缺失，符合预期。
+- 最小实现：新增聚焦状态协调器，持有一个 6 秒等待任务；以任务取消加世代令牌阻止过期回调，并以 `returning` 状态确保点击回应只在完整 frame 恢复完成后请求一次。
+- GREEN：拖动结束武装、等待到期、指针/点击/新拖动取消、过期回调、靠近恢复、点击恢复后单次回应、重复输入幂等以及 Hide/几何变化恢复套件全部通过。
+- 协调器不引用 AppKit、偏好或真实屏幕，不提供持久化回调，与任务书无偏差。
+
+### MD-013 阶段 3：偷看注意视觉生命周期
+
+- RED：聚焦模型测试因 `enterEdgePeekVisual()` 与 `leaveEdgePeekVisual()` 缺失而构建失败，无其他装配或环境错误。
+- 最小实现：`PetInteractionModel` 仅新增私有偷看生命周期标记和两个显式方法；进入时取消现有 `scheduledTask` 并固定复用 `attentionBase`，离开时幂等恢复普通 idle 调度，`stopPlayback()` 同步清除。
+- GREEN：新增模型套件与既有 `PetAnimationTests` 一并通过；进入取消自动动作、无新循环持有注意基础帧、单次恢复、离开后原点击回应及停止播放清理均通过。
+- 未新增视觉状态、素材、模型或调度器，与任务书无偏差。
+
+### MD-013 阶段 4：单一面板接入与验证
+
+- RED：独立 `PetPanelEdgeBehaviorTests` 在修正测试中 `NSPanel`/`PetPanel` 静态类型后，因控制器尚缺边缘调度与 frame 动画注入、安全靠近入口及点击入口而失败，符合预期。
+- 最小实现：`PetPanelController` 组装纯几何与协调器，仍是唯一 panel frame 和 `pet.windowPosition` 写入者；普通缩进/唤回使用 0.22 秒 `easeInEaseOut`，Hide、尺寸和屏幕异常路径先立即恢复完整 frame 再走既有安全规则。
+- 关闭装饰性接近回应时，只在边缘等待/偷看期间临时启动现有指针采样，恢复完整可见后停止；未建立第二指针循环。
+- GREEN：新面板套件及既有面板、模型、动画、接近、位置和偏好套件通过；左右缩进、中央/内部接缝拒绝、零偷看位置写入、关闭装饰性接近时唤回、点击返回后单次开心回应、Hide/Show、尺寸/屏幕恢复和面板身份均通过。
+- 完整回归首轮在 145 项中暴露 1 项重复生命周期信号：关闭装饰性接近时，靠近唤回同时由动画完成和入口重复调用幂等 `stop()`。根因追踪后新增同类点击 RED，最小修正改为按事件前阶段分配唯一停止责任；靠近与点击聚焦套件随后 GREEN。
+- 最终自动证据：无签名串行全部有效 `MochiDockTests` 145/145 通过；MD-005/MD-008 素材稳定测试 11/11 通过；全新 `/tmp/mochidock-md013-build.UzsRtm` 派生目录 clean Debug build 输出 `CLEAN SUCCEEDED` 与 `BUILD SUCCEEDED`；`git diff --check` 通过。
+- 职责复核后将既有 `PetPanel` 输入桥接拆到独立文件；`PetPanelController.swift` 最终 394 行，`PetInteractionModel.swift` 318 行，其他新产品文件均不超过 149 行。
+- 真实桌面有效证据限于：干净 Debug 应用实际启动，只显示一个完整可见的 120 pt 宠物，点击后进入开心并恢复休息。UI 工具的拖动被识别为点击，且无法访问状态栏设置，因此左右缩进、120/240/320 露头视觉、靠近/点击唤回、Hide/Show 与重启的真实桌面闭环未被工具可靠验证，保留给用户人工验收。
+- 未修改工程配置、Asset Catalog、String Catalog、偏好键、权限、网络、依赖、签名或 deployment target；MD-013 保持“开发中”，未代表用户验收、归档或标记完成。
+
+### MD-013 首轮独立复核修订
+
+- 修订 1 RED：新增真实 `PetPanel.sendEvent(leftMouseDown) → handlePetClick() → leftMouseUp` 与可控未完成回位动画后，普通拖动测试通过，但露头点击测试失败，证明直接调用点击的旧测试绕过了真实事件顺序。
+- 修订 1 GREEN：`.returning` 中的点击只把当前回位升级为一个布尔点击请求；重复点击折叠，完整 frame 动画完成后恰好触发一次既有开心回应。
+- 修订 2 RED：新增返回动画未完成时 Hide、尺寸切换、屏幕参数变化、再次拖动及旧完成强制到达测试；协调器与四条控制器路径均失败，复现恢复 frame 缺失、取消无效和旧回调竞争。
+- 修订 2 GREEN：返回阶段暴露完整 frame，取消递增协调器世代并清除点击；frame 动画器新增取消和独立世代，控制器在高优先级事件前立即恢复完整 frame。聚焦协调器与面板套件全部通过，旧完成不能补发点击或覆盖新 frame。
+- 修订 3 RED：等待和偷看中关闭装饰性接近回应的三条测试失败，确认检测器被提前停止且偷看 `attentionBase` 被设置切换误清除。
+- 修订 3 GREEN：现有检测器以控制器侧幂等标记管理，边缘状态活跃时继续承担安全唤回，回到 inactive 后只停止一次；点击和靠近唤回均通过，未增加采样循环。
+- 最终有效 `MochiDockTests` 串行复跑退出码 0；首轮 145 项加本轮 10 项确定性回归共 155 项。首次误带 UI target 的命令因 UI runner 启动失败而作废，随后按任务书限定只运行 `MochiDockTests` 成功。
+- MD-005/MD-008 素材稳定测试 11/11 通过；全新 `/private/tmp/md013-revision-clean-build-escalated-20260722-1420` 无签名 clean Debug build 退出码 0；`git diff --check` 通过。沙箱内首次 clean build 因 Swift 宏插件子进程权限失败而作废，获准用同一命令在沙箱外复跑成功。
+- 最终行数：`PetPanelController.swift` 412 行（已按计划把 frame 动画和输入桥接分别放入独立类型，未达到 500–600 行警戒范围）、`PetInteractionModel.swift` 318 行、`PetEdgeBehaviorCoordinator.swift` 155 行、`PetPanelFrameAnimator.swift` 33 行。
+- 本轮没有取得新的真实桌面拖动闭环证据；首轮实际启动仅验证单面板、120 pt 完整可见和普通点击。左右缩进、120/240/320 露头视觉及真实 Hide/尺寸/屏幕中断仍留给人工验收。任务继续为“开发中”，未提交、推送、归档或标记完成。
+
+### MD-013 直接从偷看状态拖动修订
+
+- RED：受控 animator 保留尚未完成的缩进回调，从真实 `.peeking` 直接发送 mouse-down。拖到另一外边缘与拖到中央两条测试均失败：取消次数为 0、动画队列从 1 增至 2、panel 仍在偷看 frame、视觉仍为 `attentionBase`，旧回调随后可覆盖用户最终 frame。
+- 最小实现：`handlePointerContactChanged(true)` 统一先调用同步完整恢复边界，再记录 `dragStartFrame`；移除 pointer-down 对 `edgeCoordinator.beginDrag()` 的动画式回位调用。没有修改协调器的点击、Hide、尺寸、屏幕或接近处理。
+- 既有真实点击测试按新的同步所有权边界更新：mouse-down 后 panel 已完整可见且没有异步回位，SwiftUI tap 随后仍只触发一次既有开心回应；产品验收语义不变。
+- GREEN：面板边缘套件 17 项通过。外边缘目的地仅在 mouse-up 保存一次最终完整 frame 并重新武装一个六秒等待；中央目的地仅保存最终 frame 且不重新武装。偷看与中间 frame 零写入，强制到达的旧完成不能覆盖最终 frame、补发点击或恢复偷看视觉。
+- 最终验证：全部有效 `MochiDockTests` 串行退出码 0，共 157 项；MD-005/MD-008 素材稳定测试 11/11；全新 `/private/tmp/md013-direct-drag-clean-build-20260722-1512` 无签名 clean Debug build 退出码 0；`git diff --check` 通过。
+- 最终行数：`PetPanelController.swift` 409 行、`PetInteractionModel.swift` 318 行、`PetEdgeBehaviorCoordinator.swift` 155 行、`PetPanelFrameAnimator.swift` 33 行；仍为单一 panel、单一 interaction model 和既有调度边界。
+- 本轮为确定性 AppKit 事件测试，没有新增真实桌面人工闭环证据。任务继续保持“开发中”，未提交、推送、归档或标记完成。
+
+### MD-013 首轮人工验收修订
+
+- 问题 1 RED：新增靠近回位后再次缩进、Hide/Show/尺寸/屏幕单一等待、重建控制器恢复边缘位置及中央对照测试；边缘生命周期均因缺少统一重评而失败。
+- 问题 1 GREEN：新增当前完整 frame 的统一重新武装入口，由回位完成、Show、尺寸和屏幕恢复调用；重复事件只留下一个有效六秒任务，中央与失去资格的 frame 保持 inactive。
+- 问题 2 RED：测试注入独立 `proximityIntentScheduler` 时因接口不存在编译失败，证明当前没有可控延迟边界。
+- 问题 2 GREEN：新增 0.25 秒可取消靠近意图门控；覆盖延迟到期回位、重复 entry 单任务、真实 mouse-down→tap 一次开心、拖到中央/另一边缘、Hide/尺寸/屏幕取消及强制旧回调失效。
+- 问题 3 RED：实际 `PetPanel` 配置测试确认未声明 `.fullScreenDisallowsTiling`。最小实现只把该公开 AppKit 标志加入现有 `.canJoinAllSpaces`，聚焦配置测试 GREEN。
+- 真实 Debug 应用成功启动，确认仍是单一 120 pt borderless floating panel且普通视觉正常。桌面控制首次读取超时；第二次能读取窗口，但拖动坐标映射两次失败，未能观察拖动中的瞬时平铺预览。因此不得宣称问题 3 已获真实桌面修复证据。
+- 最终自动证据：全部有效 `MochiDockTests` 串行退出码 0，共 165 项；MD-005/MD-008 素材稳定测试 11/11；全新 `/private/tmp/md013-desktop-review-clean-build-20260722-1608` 无签名 clean Debug build 退出码 0；`git diff --check` 通过。
+- 按清晰职责提取 `PetProximityIntentGate.swift` 31 行；`PetPanelController.swift` 465 行，未进入 500–600 行警戒范围。未新增设置、权限、依赖、素材或持久化键。
+- MD-013 继续保持“开发中”；未提交、推送、归档、标记完成或启动 MD-014。
+
+### MD-013 最终独立复核
+
+- 高级项目经理逐项复核直接露头拖动修订及全部 MD-013 工作区差异，未发现 Critical、Important 或 Minor 问题；先前三个 Important 和第二轮直接拖动竞争均已关闭。
+- 新鲜独立验证：全部有效 `MochiDockTests` 157/157 通过；MD-005/MD-008 素材稳定测试 11/11 通过；全新 `/private/tmp/md013-finalreview-build-019f897e` 无签名 clean Debug build 输出 `CLEAN SUCCEEDED` 与 `BUILD SUCCEEDED`；`git diff --check` 通过。
+- MD-013 状态由“开发中”更新为“待验收”。下一步由用户完成左右边缘、三档视觉、靠近/点击、直接露头拖动、中断恢复、重启和低打扰感的真实桌面检查。
+- 本轮只更新项目管理记录，没有修改产品代码；未代表用户验收，未提交、推送、归档或标记完成。
+
+### MD-013 首轮人工验收未通过
+
+- 用户确认 120/240/320 三档基本边缘缩进、露头和靠近回位通过。
+- 用户发现靠近回位后不再自动缩进；Hide/Show、尺寸切换及退出重启恢复到外边缘时也不再自动缩进。只读代码核对确认当前重新武装入口仅在用户拖动 mouse-up，属于同一生命周期缺口。
+- 用户无法真实点击或直接拖动露头宠物，因为指针进入接近范围已抢先回位；既有自动测试绕过了真实桌面上“先穿越接近区”的输入前置条件。需要以短暂可取消门控保留靠近、点击和拖动三种交互。
+- 拖到屏幕边缘会触发 macOS 半屏平铺预览大框；需由开发团队先复现并核对 panel 窗口角色和公开 AppKit 配置，再作最小修正。
+- MD-013 从“待验收”退回“开发中”；下一步由用户亲自把聚焦修订 Prompt 交给 Codex 开发团队。本轮未修改产品代码，未提交、推送、归档或启动 MD-014。
+
+### MD-013 平铺预览修订复验失败
+
+- 开发团队完成生命周期重新武装和 0.25 秒靠近门控，自动验证报告 165 项测试与 11 项素材测试通过；平铺部分只增加 `fullScreenDisallowsTiling`，且明确没有取得真实拖动证据。
+- 用户随后真实复验确认半屏平铺预览仍存在，因此平铺修正不成立，MD-013 继续保持“开发中”。
+- 官方 AppKit 文档核对确认该 flag 仅排除 full-screen tile。下一轮聚焦把系统托管背景拖动替换为 `PetPanel` 内应用控制的 mouse-down/dragged/up frame 移动，并以用户真实拖动作为唯一完成证据。
+- 已通过的生命周期和靠近门控不重新开发；未提交、推送、归档、标记完成或启动 MD-014。
+
+### MD-013 应用控制拖动独立复核
+
+- 开发团队把 panel 改为不可由系统移动，并在 `PetPanel` 内用屏幕坐标 delta 自控 frame；报告的真实左右慢拖、快速甩动和跨侧露头拖动均未出现平铺预览。
+- 高级项目经理新鲜复跑全部有效测试，167 个逻辑测试、16 个套件通过；开发报告的 251 是参数化测试展开后的执行次数，不是 251 个独立测试。
+- 独立复核发现一个 Important：Hide、尺寸、屏幕变化只取消 panel 内部拖动坐标，没有统一清除控制器拖动起点；尺寸/屏幕路径也没有恢复检测器 dragging 状态。现有测试未覆盖真实 drag 被这些生命周期事件打断后再收到旧 mouse-up。
+- MD-013 继续保持“开发中”。下一步只修订统一拖动取消边界并补三类中断回归；不重做自控拖动、平铺方案、边缘生命周期或靠近门控，不启动 MD-014。
+
+### MD-013 拖动取消最终独立复核
+
+- 统一取消边界已关闭上轮 Important：panel/controller 拖动起点、检测器 dragging 与靠近意图一次清除；Hide、有效尺寸和屏幕变化后的旧 dragged/up 均为空操作，新拖动不继承旧状态。
+- 独立代码审查未发现 Critical、Important 或 Minor；32 项面板边缘聚焦测试通过。
+- 新鲜独立验证：全部 171 个逻辑 `MochiDockTests`（参数化展开 255 次）通过；素材稳定测试 11/11；全新 `/private/tmp/md013-final-cancel-review` 无签名 clean Debug build 成功；`git diff --check` 通过。
+- MD-013 从“开发中”更新为“待验收”。下一步由用户最终复测真实左右边缘平铺、自控拖动、三种唤回/拖动入口与恢复后再次缩进；未提交、推送、归档、标记完成或启动 MD-014。
+
+### MD-013 最终人工验收与收口
+
+- 用户完成真实桌面复测并确认目前未发现问题，MD-013 人工验收通过。
+- 左右边缘不再出现 macOS 半屏平铺预览；应用控制拖动、六秒缩进、靠近/点击/直接拖动、Hide/Show、尺寸和重启后的重新等待均完成最终体验收口。
+- MD-013 状态由“待验收”更新为“已完成”，任务书归档至 `docs/tasks/completed/MD-013-edge-hide-and-peek.md`。
+- 本次收口只提交 MD-013 产品代码、测试、实施计划与项目记录；不推送、不发布、不启动 MD-014。
+
+### MD-013 应用控制拖动修订
+
+- RED：新增 panel 禁止系统移动、屏幕坐标 delta、固定起始 frame、无位移不持久化及真实事件拖动回归；当前系统托管配置和缺失 dragged 处理使聚焦测试退出码 65。全量首跑另发现一项旧测试仍要求背景可拖动，已按本轮明确边界修正。
+- GREEN：`PetPanel` 集中处理真实 left mouse-down/dragged/up；mouse-down 在同步露头恢复前保存屏幕坐标，恢复后记录完整 frame；dragged 始终从该 frame 加屏幕 delta 更新同一 panel，mouse-up 沿用控制器最终安全校正、单次持久化和边缘重新武装。未调用 `performDrag(with:)`，未增加 panel、权限、依赖、设置或持久化键。
+- 聚焦 `PetPanelEdgeBehaviorTests` 28 项全部通过；全部有效 `MochiDockTests` 串行退出码 0，结果包记录 251 次测试执行；MD-005/MD-008 素材稳定测试 11/11；全新 `/private/tmp/md013-custom-drag-clean` 无签名 clean Debug build 退出码 0；`git diff --check` 通过。
+- 真实桌面：终止两个遗留 Debug 实例后只启动本轮最新应用。公开 CoreGraphics 实际鼠标输入完成左、右慢速边缘拖动并停留，全桌面截图未出现半屏平铺预览；快速左甩后也无残留预览。拖动连续且露头直接跨侧没有首次跳动；右边缘松手、移开指针并等待后进入 42 pt 露头位置。
+- `PetPanel.swift` 49 行，`PetPanelController.swift` 469 行；控制器仍低于 500–600 行警戒范围。MD-013 保持“开发中”，未提交、推送、归档、标记完成或启动 MD-014。
+
+### MD-013 生命周期中断拖动修订
+
+- RED：新增真实 `sendEvent` 序列覆盖 `mouseDown → mouseDragged → Hide/尺寸/屏幕 → stale dragged/up` 以及中断后新拖动。Hide、尺寸和屏幕三条按预期失败：旧 mouse-up 额外写入位置，屏幕安全 frame 被旧拖动覆盖，尺寸/屏幕检测器未统一退出 dragging；聚焦套件退出码 65。
+- GREEN：新增控制器级 `cancelActiveDrag()`，统一清除 panel 与 controller 两侧起点、检测器 dragging 和靠近意图；`PetPanel` 在会话已取消时直接忽略旧 dragged/up。Hide、有效尺寸切换和屏幕通知接入同一入口，相同尺寸提前返回语义保持不变。
+- 本轮新增 4 项，既有 28 项加新增后共 32 项 `PetPanelEdgeBehaviorTests` 通过；全部有效 `MochiDockTests` 为 171 个逻辑测试、参数化展开后 255 次执行、0 失败；MD-005/MD-008 素材稳定测试 11/11；全新 `/private/tmp/md013-lifecycle-drag-clean` 无签名 clean Debug build 退出码 0；`git diff --check` 通过。
+- 最终行数：`PetPanel.swift` 49 行，`PetPanelController.swift` 473 行，`PetPanelEdgeBehaviorTests.swift` 743 行。产品控制器仍低于 500–600 行警戒范围；测试文件增长来自同一 AppKit 生命周期 harness 与真实事件矩阵，本轮未为行数机械拆分。
+- 本轮没有修改自控拖动算法、平铺修正、边缘重新等待或 0.25 秒门控，也未重复宣称桌面平铺验证。MD-013 保持“开发中”，未提交、推送、归档、标记完成或启动 MD-014。

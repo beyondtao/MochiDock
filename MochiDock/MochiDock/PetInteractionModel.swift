@@ -27,6 +27,7 @@ final class PetInteractionModel {
     private let preferences: any PetPreferencesStoring
     private var scheduledTask: (any PetAnimationScheduledTask)?
     private var isPlaybackActive = false
+    private var isEdgePeekVisualActive = false
     private var completedBreathingCycles = 0
 
     var preferencesStore: any PetPreferencesStoring { preferences }
@@ -118,6 +119,7 @@ final class PetInteractionModel {
 
     func stopPlayback() {
         isPlaybackActive = false
+        isEdgePeekVisualActive = false
         cancelScheduledTransition()
         animationState = .idle
         visualState = .idle
@@ -134,6 +136,22 @@ final class PetInteractionModel {
         schedule(after: timing.responseAnticipation) { model in
             model.beginJump()
         }
+    }
+
+    func enterEdgePeekVisual() {
+        guard isPlaybackActive, !isEdgePeekVisualActive else { return }
+        isEdgePeekVisualActive = true
+        cancelScheduledTransition()
+        mood = .resting
+        visualState = .attentionBase
+        animationState = .attentionBase
+    }
+
+    func leaveEdgePeekVisual() {
+        guard isEdgePeekVisualActive else { return }
+        isEdgePeekVisualActive = false
+        completedBreathingCycles = 0
+        returnToIdleAndScheduleNextAction()
     }
 
     @discardableResult
@@ -169,7 +187,7 @@ final class PetInteractionModel {
         isProximityResponseEnabled = enabled
         preferences.set(String(enabled), forKey: PetPreferenceKey.proximityResponseEnabled)
         guard changed else { return }
-        guard !enabled, isAttentionInProgress else { return }
+        guard !enabled, isAttentionInProgress, !isEdgePeekVisualActive else { return }
         cancelScheduledTransition()
         completedBreathingCycles = 0
         returnToIdleAndScheduleNextAction()

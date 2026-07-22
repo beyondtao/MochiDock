@@ -293,4 +293,10 @@ final class TestPetAnimationScheduler: PetAnimationScheduling {
             return
         }
     }
+
+    func runAllIncludingCancelled() {
+        let pending = entries
+        entries.removeAll()
+        for entry in pending { entry.action() }
+    }
 }
