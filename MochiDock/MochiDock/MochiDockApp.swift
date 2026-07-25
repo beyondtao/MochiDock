@@ -65,6 +65,7 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
     private let panelController: PetPanelController
     private let loginItemService: any LoginItemServicing
     private let applicationActivator: any ApplicationActivating
+    let reminderCenter: ReminderCenter
     private(set) var loginItemStatus: LoginItemStatus
     private(set) var loginItemOutcome: LocalizedStringResource?
     private(set) lazy var settingsWindowController = SettingsWindowController(appDelegate: self)
@@ -72,22 +73,28 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
     override init() {
         let model = PetInteractionModel()
         let loginItemService = LoginItemService()
+        let reminderCenter = ReminderCenter()
         self.model = model
         self.panelController = PetPanelController(model: model)
         self.loginItemService = loginItemService
         self.applicationActivator = NSApplication.shared
+        self.reminderCenter = reminderCenter
         self.loginItemStatus = loginItemService.status
         super.init()
+        panelController.connectReminderCenter(reminderCenter)
     }
 
     init(model: PetInteractionModel, panelController: PetPanelController) {
         let loginItemService = LoginItemService()
+        let reminderCenter = Self.makeTransientReminderCenter()
         self.model = model
         self.panelController = panelController
         self.loginItemService = loginItemService
         self.applicationActivator = NSApplication.shared
+        self.reminderCenter = reminderCenter
         self.loginItemStatus = loginItemService.status
         super.init()
+        panelController.connectReminderCenter(reminderCenter)
     }
 
     init(
@@ -96,12 +103,15 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
         loginItemService: any LoginItemServicing,
         applicationActivator: any ApplicationActivating
     ) {
+        let reminderCenter = Self.makeTransientReminderCenter()
         self.model = model
         self.panelController = panelController
         self.loginItemService = loginItemService
         self.applicationActivator = applicationActivator
+        self.reminderCenter = reminderCenter
         self.loginItemStatus = loginItemService.status
         super.init()
+        panelController.connectReminderCenter(reminderCenter)
     }
 
     var displaySize: PetDisplaySize { model.displaySize }
@@ -112,6 +122,19 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let workspaceCenter = NSWorkspace.shared.notificationCenter
+        workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationWillSleep),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationDidWake),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
         showPet()
     }
 
@@ -165,6 +188,18 @@ final class MochiDockAppDelegate: NSObject, NSApplicationDelegate, ObservableObj
     func togglePetVisibility() {
         panelController.togglePetVisibility()
         objectWillChange.send()
+    }
+
+    @objc func applicationWillSleep() { reminderCenter.willSleep() }
+    @objc func applicationDidWake() { reminderCenter.didWake() }
+
+    private static func makeTransientReminderCenter() -> ReminderCenter {
+        let clock = SystemReminderClock()
+        return ReminderCenter(
+            clock: clock,
+            scheduler: DispatchReminderScheduler(now: { clock.now }),
+            persistence: VolatileReminderPersistence()
+        )
     }
 
     private func outcome(for status: LoginItemStatus) -> LocalizedStringResource? {

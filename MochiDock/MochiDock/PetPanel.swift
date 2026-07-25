@@ -3,6 +3,7 @@ import AppKit
 @MainActor
 final class PetPanel: NSPanel {
     var onPointerContactChanged: ((Bool) -> Void)?
+    var onFrameChanged: (() -> Void)?
     private var dragStartScreenLocation: NSPoint?
     private var dragStartFrame: NSRect?
 
@@ -33,6 +34,7 @@ final class PetPanel: NSPanel {
                 x: dragStartFrame.origin.x + delta.x,
                 y: dragStartFrame.origin.y + delta.y
             ))
+            onFrameChanged?()
         case .leftMouseUp:
             guard dragStartFrame != nil else { return }
             pointerContactChanged(false)

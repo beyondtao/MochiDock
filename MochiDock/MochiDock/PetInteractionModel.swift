@@ -29,8 +29,11 @@ final class PetInteractionModel {
     private var isPlaybackActive = false
     private var isEdgePeekVisualActive = false
     private var completedBreathingCycles = 0
+    private var reminderCompletion: (() -> Void)?
+    var onOrdinaryResponseEnded: (() -> Void)?
 
     var preferencesStore: any PetPreferencesStoring { preferences }
+    var isOrdinaryResponseActive: Bool { isResponseInProgress }
 
     init() {
         self.scheduler = DispatchPetAnimationScheduler()
@@ -83,6 +86,9 @@ final class PetInteractionModel {
         case .falling: 1.015
         case .attentionTail: 1.01
         case .attentionBase: 1.005
+        case .reminderLift: 1.02
+        case .reminderNodDown: 0.97
+        case .reminderNodUp: 1.01
         default: 1
         }
     }
@@ -92,6 +98,9 @@ final class PetInteractionModel {
         case .jumpingUp: -displaySize.pointLength * 0.08
         case .falling: -displaySize.pointLength * 0.02
         case .attentionTail, .attentionBase: -displaySize.pointLength * 0.01
+        case .reminderLift: -displaySize.pointLength * 0.04
+        case .reminderNodDown: -displaySize.pointLength * 0.015
+        case .reminderNodUp: -displaySize.pointLength * 0.035
         default: 0
         }
     }
@@ -107,6 +116,8 @@ final class PetInteractionModel {
         case .recovering: timing.recoveryDuration
         case .attentionTail: timing.attentionTailDuration
         case .attentionBase: timing.attentionBaseDuration
+        case .reminderLift, .reminderNodDown, .reminderNodUp: 0.2
+        case .reminderRecovery: 0.5
         case .idle: 0
         }
     }
@@ -136,6 +147,15 @@ final class PetInteractionModel {
         schedule(after: timing.responseAnticipation) { model in
             model.beginJump()
         }
+    }
+
+    func playReminderAnimation(completion: @escaping () -> Void = {}) {
+        cancelScheduledTransition()
+        reminderCompletion = completion
+        mood = .resting
+        visualState = .attentionBase
+        animationState = .reminderLift
+        schedule(after: 0.2) { model in model.reminderNodDown(first: true) }
     }
 
     func enterEdgePeekVisual() {
@@ -268,7 +288,38 @@ final class PetInteractionModel {
         schedule(after: timing.recoveryDuration) { model in
             model.completedBreathingCycles = 0
             model.returnToIdleAndScheduleNextAction()
+            model.onOrdinaryResponseEnded?()
         }
+    }
+
+    private func reminderNodDown(first: Bool) {
+        visualState = .attentionTail
+        animationState = .reminderNodDown
+        schedule(after: 0.2) { model in model.reminderNodUp(first: first) }
+    }
+
+    private func reminderNodUp(first: Bool) {
+        visualState = .attentionBase
+        animationState = .reminderNodUp
+        schedule(after: 0.2) { model in
+            if first {
+                model.reminderNodDown(first: false)
+            } else {
+                model.animationState = .reminderRecovery
+                model.schedule(after: 0.5) { model in model.finishReminderAnimation() }
+            }
+        }
+    }
+
+    private func finishReminderAnimation() {
+        visualState = .idle
+        animationState = .idle
+        let completion = reminderCompletion
+        reminderCompletion = nil
+        completion?()
+        guard isPlaybackActive else { return }
+        completedBreathingCycles = 0
+        returnToIdleAndScheduleNextAction()
     }
 
     private func returnToIdleAndScheduleNextAction() {

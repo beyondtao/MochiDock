@@ -14,6 +14,10 @@ enum PetAnimationState: Equatable {
     case recovering
     case attentionTail
     case attentionBase
+    case reminderLift
+    case reminderNodDown
+    case reminderNodUp
+    case reminderRecovery
 }
 
 enum PetVisualState: CaseIterable, Equatable {

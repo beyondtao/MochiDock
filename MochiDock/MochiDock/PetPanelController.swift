@@ -3,19 +3,20 @@ import SwiftUI
 
 @MainActor
 final class PetPanelController {
-    private let model: PetInteractionModel
+    let model: PetInteractionModel
     private let preferences: any PetPreferencesStoring
-    private let visibleFrames: () -> [NSRect]
+    let visibleFrames: () -> [NSRect]
     private let notificationCenter: NotificationCenter
     private let placement = PetWindowPlacement()
     private let edgePlacement = PetEdgePlacement()
     private let frameAnimator: any PetPanelFrameAnimating
     private let proximityIntentGate: PetProximityIntentGate
     private var proximityDetector: (any PointerProximityDetecting)!
-    private var edgeCoordinator: PetEdgeBehaviorCoordinator!
+    var edgeCoordinator: PetEdgeBehaviorCoordinator!
     private var isProximityDetectorRunning = false
-    private var dragStartFrame: NSRect?
+    var dragStartFrame: NSRect?
     private var pendingRestorationFrame: NSRect?
+    var reminderPanelController: ReminderPanelController?
     private(set) var panel: NSPanel?
 
     var isPetVisible: Bool {
@@ -125,9 +126,14 @@ final class PetPanelController {
             startProximityDetector()
         }
         rearmEdgeBehaviorForCurrentFrame()
+        reminderPanelController?.petDidShow(
+            isDragging: dragStartFrame != nil,
+            isPeeking: isPeeking
+        )
     }
 
     func hidePet() {
+        reminderPanelController?.petDidHide()
         cancelActiveDrag()
         restoreFullFrameImmediatelyIfNeeded()
         stopProximityDetector()
@@ -203,6 +209,7 @@ final class PetPanelController {
             persistPosition(of: finalFrame)
         }
         rearmEdgeBehaviorForCurrentFrame()
+        reminderPanelController?.petGeometryDidChange()
     }
 
     private func makePanel() -> NSPanel {
@@ -232,6 +239,9 @@ final class PetPanelController {
         })
         panel.onPointerContactChanged = { [weak self] isDown in
             self?.handlePointerContactChanged(isDown)
+        }
+        panel.onFrameChanged = { [weak self] in
+            self?.reminderPanelController?.petGeometryDidChange()
         }
         restoreOrCenter(panel)
         self.panel = panel
@@ -281,6 +291,7 @@ final class PetPanelController {
             dragStartFrame = panel.frame
             return
         }
+        reminderPanelController?.dragDidEnd()
         defer { dragStartFrame = nil }
         guard let dragStartFrame, panel.frame.origin != dragStartFrame.origin else { return }
         let finalFrame = placement.safeFrame(
@@ -293,6 +304,7 @@ final class PetPanelController {
         pendingRestorationFrame = nil
         persistPosition(of: finalFrame)
         armEdgeBehaviorIfEligible(fullFrame: finalFrame)
+        reminderPanelController?.petGeometryDidChange()
     }
 
     @objc private func screenParametersDidChange() {
@@ -321,6 +333,7 @@ final class PetPanelController {
             persistPosition(of: safeFrame)
         }
         rearmEdgeBehaviorForCurrentFrame()
+        reminderPanelController?.petGeometryDidChange()
     }
 
     private func cancelActiveDrag() {
@@ -337,6 +350,7 @@ final class PetPanelController {
 
     @discardableResult
     func handleProximityEntry() -> Bool {
+        guard reminderPanelController?.suppressesDecorativeProximity != true else { return false }
         let phaseBeforeEntry = edgeCoordinator.phase
         let wasPeeking: Bool
         if case .peeking = phaseBeforeEntry {
@@ -362,6 +376,7 @@ final class PetPanelController {
     }
 
     func handlePetClick() {
+        if reminderPanelController?.handlePetClick() == true { return }
         let phaseBeforeClick = edgeCoordinator.phase
         edgeCoordinator.click()
         if !model.isProximityResponseEnabled,
@@ -409,6 +424,10 @@ final class PetPanelController {
     }
 
     private func armEdgeBehaviorIfEligible(fullFrame: NSRect) {
+        guard reminderPanelController?.suppressesEdgeRetreat != true else {
+            edgeCoordinator.cancel(restoringFullFrame: false)
+            return
+        }
         let frames = visibleFrames()
         guard let edge = edgePlacement.eligibleEdge(for: fullFrame, visibleFrames: frames),
               let visibleFrame = frames.first(where: { $0.contains(fullFrame) }) else {
@@ -429,9 +448,14 @@ final class PetPanelController {
         }
     }
 
-    private func rearmEdgeBehaviorForCurrentFrame() {
+    func rearmEdgeBehaviorForCurrentFrame() {
         guard let panel, panel.isVisible else { return }
         armEdgeBehaviorIfEligible(fullFrame: panel.frame)
+    }
+
+    var isPeeking: Bool {
+        if case .peeking = edgeCoordinator.phase { return true }
+        return false
     }
 
     private func scheduleProximityIntentIfNeeded() {
@@ -442,11 +466,11 @@ final class PetPanelController {
         }
     }
 
-    private func cancelProximityIntent() {
+    func cancelProximityIntent() {
         proximityIntentGate.cancel()
     }
 
-    private func restoreFullFrameImmediatelyIfNeeded() {
+    func restoreFullFrameImmediatelyIfNeeded() {
         guard let panel, let fullFrame = edgeCoordinator.fullFrameToRestore else {
             edgeCoordinator.cancel(restoringFullFrame: false)
             return

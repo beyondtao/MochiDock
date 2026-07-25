@@ -2,6 +2,7 @@ import SwiftUI
 
 enum SettingsSection: String, CaseIterable, Identifiable {
     case pet
+    case reminders
     case application
 
     var id: Self { self }
@@ -9,6 +10,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     var title: LocalizedStringKey {
         switch self {
         case .pet: "Pet"
+        case .reminders: "Reminders"
         case .application: "Application"
         }
     }
@@ -16,6 +18,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     var symbolName: String {
         switch self {
         case .pet: "pawprint.fill"
+        case .reminders: "bell.fill"
         case .application: "gearshape.fill"
         }
     }
@@ -91,15 +94,15 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(selection.title)
                     .font(.largeTitle.weight(.bold))
-                Text(selection == .pet
-                     ? "Adjust how your little friend looks and responds."
-                     : "Choose how MochiDock behaves on your Mac.")
+                Text(subtitle)
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
 
             if selection == .pet {
                 petSettings
+            } else if selection == .reminders {
+                ReminderSettingsView(center: appDelegate.reminderCenter)
             } else {
                 applicationSettings
             }
@@ -110,6 +113,14 @@ struct SettingsView: View {
         .padding(.vertical, 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var subtitle: LocalizedStringKey {
+        switch selection {
+        case .pet: "Adjust how your little friend looks and responds."
+        case .reminders: "Let your little friend gently remind you."
+        case .application: "Choose how MochiDock behaves on your Mac."
+        }
     }
 
     private var petSettings: some View {
