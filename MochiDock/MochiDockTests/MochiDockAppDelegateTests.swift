@@ -55,8 +55,8 @@ struct MochiDockAppDelegateTests {
         #expect(MochiDockMenuAction.allCases == [.petVisibility, .settings, .quit])
     }
 
-    @Test func settingsPreviewUsesTwoFocusedSectionsAndAComfortableSplitWindow() throws {
-        #expect(SettingsSection.allCases == [.pet, .application])
+    @Test func settingsPreviewUsesThreeFocusedSectionsAndAComfortableSplitWindow() throws {
+        #expect(SettingsSection.allCases == [.pet, .reminders, .application])
 
         let appDelegate = makeAppDelegate(loginItem: TestLoginItemService(status: .notRegistered))
         let window = try #require(appDelegate.settingsWindowController.window)

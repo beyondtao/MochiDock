@@ -113,6 +113,25 @@ struct PetInteractionModelTests {
         #expect(scheduler.pendingCount == 0)
     }
 
+    @Test func reminderAnimationUsesAttentionVisualForOneLiftAndTwoNodsThenReturnsIdle() {
+        let scheduler = TestPetAnimationScheduler()
+        let model = PetInteractionModel(
+            scheduler: scheduler,
+            preferences: InMemoryPetPreferences()
+        )
+        var completionCount = 0
+
+        model.playReminderAnimation { completionCount += 1 }
+
+        #expect(model.visualState == .attentionBase)
+        #expect(model.animationState == .reminderLift)
+        for _ in 0..<6 { scheduler.runNext() }
+        #expect(model.visualState == .idle)
+        #expect(model.animationState == .idle)
+        #expect(completionCount == 1)
+        #expect(scheduler.scheduledDelays.reduce(0, +) == 1.5)
+    }
+
     private func localized(_ resource: LocalizedStringResource) -> String {
         String(localized: resource)
     }
